@@ -1,11 +1,44 @@
 import { Pane } from "tweakpane";
+import Stats from "stats-gl";
 import type { ViewApplication } from "../../view-application";
 import { createViewApplication } from "../../create-view-application";
 
-export const createStoryTemplate = (
-  parentElement: HTMLElement
-): { viewApplication: ViewApplication; tweakpane: Pane } => {
-  const viewApplication = createViewApplication(parentElement);
+export const createStoryTemplate = (): {
+  storyElement: HTMLElement;
+  viewApplication: ViewApplication;
+  tweakpane: Pane;
+} => {
+  const storyElement = document.createElement("div");
+  storyElement.style.position = "absolute";
+  storyElement.style.top = "0";
+  storyElement.style.left = "0";
+  storyElement.style.width = "100%";
+  storyElement.style.height = "100%";
+
+  const stats = new Stats({
+    trackGPU: false,
+    trackHz: false,
+    trackCPT: false,
+    logsPerSecond: 4,
+    graphsPerSecond: 30,
+    samplesLog: 40,
+    samplesGraph: 10,
+    precision: 2,
+    horizontal: true,
+    minimal: false,
+    mode: 0,
+  });
+
+  const viewApplication = createViewApplication(
+    storyElement,
+    () => {
+      stats.begin();
+    },
+    () => {
+      stats.end();
+      stats.update();
+    }
+  );
 
   viewApplication.start();
 
@@ -16,7 +49,27 @@ export const createStoryTemplate = (
   tweakpane.element.style.right = "10px";
   tweakpane.element.style.zIndex = "2";
 
-  parentElement.appendChild(tweakpane.element);
+  storyElement.appendChild(tweakpane.element);
 
-  return { viewApplication, tweakpane };
+  storyElement.appendChild(stats.dom);
+
+  // Render resolution controls
+  const resolutionFolder = tweakpane.addFolder({
+    title: "Resolution",
+  });
+
+  const quality = {
+    percentage: 100,
+  };
+
+  resolutionFolder
+    .addBinding(quality, "percentage", {
+      min: 0,
+      max: 100,
+    })
+    .on("change", () => {
+      viewApplication.setRenderQualityPercentage(quality.percentage);
+    });
+
+  return { storyElement, viewApplication, tweakpane };
 };

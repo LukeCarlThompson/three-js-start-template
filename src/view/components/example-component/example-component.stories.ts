@@ -8,9 +8,7 @@ const meta = {
   render: ({ dimensions }) => {
     const exampleComponent = new ExampleComponent({ dimensions });
 
-    const storyElement = document.createElement("div");
-
-    const { viewApplication, tweakpane } = createStoryTemplate(storyElement);
+    const { storyElement, viewApplication, tweakpane } = createStoryTemplate();
 
     tweakpane.addFolder({
       title: "Folder",

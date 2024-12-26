@@ -1,13 +1,22 @@
 export type UpdateFunction = (delta: number) => void;
 
+export type TickerProps = {
+  beforeTick?: () => void;
+  afterTick?: () => void;
+};
+
 export class Ticker {
   #deltaMax = 0.1;
   #time;
   #updateQueue: Set<(delta: number) => void> = new Set();
   #running = false;
+  #beforeTick?: () => void;
+  #afterTick?: () => void;
 
-  public constructor() {
+  public constructor({ beforeTick, afterTick }: TickerProps = {}) {
     this.#time = performance.now() / 1000;
+    this.#beforeTick = beforeTick;
+    this.#afterTick = afterTick;
   }
 
   public start(): void {
@@ -47,12 +56,15 @@ export class Ticker {
 
   readonly #update = (): void => {
     if (!this.#running) return;
+    this.#beforeTick?.();
 
     const delta = this.#delta;
 
     this.#updateQueue.forEach((updateFunction) => {
       updateFunction(delta);
     });
+
+    this.#afterTick?.();
 
     requestAnimationFrame(this.#update);
   };

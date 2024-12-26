@@ -10,6 +10,8 @@ export type ViewApplicationProps = {
   renderQualityPercentage: number;
   renderMaxPixelLimit: number;
   renderMinPixelLimit: number;
+  beforeUpdate?: () => void;
+  afterUpdate?: () => void;
 };
 
 export class ViewApplication {
@@ -24,6 +26,8 @@ export class ViewApplication {
     renderQualityPercentage,
     renderMaxPixelLimit,
     renderMinPixelLimit,
+    beforeUpdate,
+    afterUpdate,
   }: ViewApplicationProps) {
     const clientWidth = window.innerWidth;
     const clientHeight = window.innerHeight;
@@ -50,7 +54,7 @@ export class ViewApplication {
       minPixels: renderMinPixelLimit,
     });
 
-    this.#ticker = new Ticker();
+    this.#ticker = new Ticker({ beforeTick: beforeUpdate, afterTick: afterUpdate });
 
     this.#ticker.add(this.#update);
   }
