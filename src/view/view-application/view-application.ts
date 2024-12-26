@@ -3,6 +3,7 @@ import { PerspectiveCamera, Scene, WebGLRenderer } from "three";
 import type { Object3D } from "three";
 import { RenderResolutionController } from "./render-resolution-controller";
 import { Ticker } from "./ticker";
+import type { UpdateFunction } from "./ticker";
 
 export type ViewApplicationProps = {
   rendererParentElement: HTMLElement;
@@ -64,6 +65,14 @@ export class ViewApplication {
 
   public removeFromScene(object: Object3D): void {
     this.#scene.remove(object);
+  }
+
+  public addToTicker(updateFunction: UpdateFunction): void {
+    this.#ticker.add(updateFunction);
+  }
+
+  public removeFromTicker(updateFunction: UpdateFunction): void {
+    this.#ticker.remove(updateFunction);
   }
 
   public start(): void {
