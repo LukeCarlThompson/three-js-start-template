@@ -1,3 +1,5 @@
+export type UpdateFunction = (delta: number) => void;
+
 export class Ticker {
   #deltaMax = 0.1;
   #time;
@@ -28,11 +30,11 @@ export class Ticker {
     this.#update();
   }
 
-  public add(updateFunction: (delta: number) => void): void {
+  public add(updateFunction: UpdateFunction): void {
     this.#updateQueue.add(updateFunction);
   }
 
-  public remove(updateFunction: (delta: number) => void): void {
+  public remove(updateFunction: UpdateFunction): void {
     this.#updateQueue.delete(updateFunction);
   }
 
