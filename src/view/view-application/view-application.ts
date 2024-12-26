@@ -50,6 +50,7 @@ export class ViewApplication {
     });
 
     this.#ticker = new Ticker();
+
     this.#ticker.add(this.#update);
   }
 
@@ -71,6 +72,10 @@ export class ViewApplication {
 
   public stop(): void {
     this.#ticker.stop();
+  }
+
+  public handleResize(width: number, height: number): void {
+    this.#resolutionController.setSize(width, height);
   }
 
   #update = (): void => {

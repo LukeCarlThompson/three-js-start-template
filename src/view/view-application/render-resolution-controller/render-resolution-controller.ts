@@ -42,7 +42,7 @@ export class RenderResolutionController {
 
   public readonly getResolution = (): { width: number; height: number } => this.resolution;
 
-  public readonly setSize = (height: number, width: number): void => {
+  public readonly setSize = (width: number, height: number): void => {
     this.size.height = height;
     this.size.width = width;
     this.#setSizeAndPixelDensity();
