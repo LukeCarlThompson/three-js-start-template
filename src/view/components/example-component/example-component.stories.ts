@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/html";
-import { createStoryTemplate } from "../../story-template";
-import type { ExampleComponentProps } from "../example-component";
-import { ExampleComponent } from "../example-component";
+import { createStoryTemplate } from "../story-template";
+import type { ExampleComponentProps } from "./example-component";
+import { ExampleComponent } from "./example-component";
 
 const meta = {
   title: "Example/Example Component",
@@ -10,11 +10,15 @@ const meta = {
 
     const storyElement = document.createElement("div");
 
-    const storyTemplate = createStoryTemplate(storyElement);
+    const { viewApplication, tweakpane } = createStoryTemplate(storyElement);
 
-    storyTemplate.addToScene(exampleComponent);
-    storyTemplate.addToTicker(exampleComponent.update);
-    storyTemplate.camera.position.z = 5;
+    tweakpane.addFolder({
+      title: "Folder",
+    });
+
+    viewApplication.addToScene(exampleComponent);
+    viewApplication.addToTicker(exampleComponent.update);
+    viewApplication.camera.position.z = 5;
 
     return storyElement;
   },

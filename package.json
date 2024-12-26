@@ -20,10 +20,12 @@
     "@storybook/html": "8.4.7",
     "@storybook/html-vite": "8.4.7",
     "@storybook/test": "8.4.7",
+    "@tweakpane/core": "2.0.5",
     "@types/three": "0.171.0",
     "eslint": "9.17.0",
     "eslint-plugin-storybook": "0.11.1",
     "storybook": "8.4.7",
+    "tweakpane": "4.0.5",
     "typescript": "~5.6.2",
     "typescript-eslint": "8.18.2",
     "vite": "^6.0.5"
