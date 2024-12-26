@@ -1,8 +1,6 @@
 import "./style.css";
 
-import { setupCounter } from "./counter.ts";
-import typescriptLogo from "./typescript.svg";
-import viteLogo from "/vite.svg";
+import { View, createViewApplication } from "./view";
 
 const appElement = document.querySelector<HTMLDivElement>("#app");
 
@@ -10,28 +8,12 @@ if (!appElement) {
   throw new Error("Unable to find app element");
 }
 
-appElement.innerHTML = `
-  <div>
-    <a href="https://vite.dev" target="_blank">
-      <img src="${viteLogo}" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://www.typescriptlang.org/" target="_blank">
-      <img src="${typescriptLogo}" class="logo vanilla" alt="TypeScript logo" />
-    </a>
-    <h1>Vite + TypeScript</h1>
-    <div class="card">
-      <button id="counter" type="button"></button>
-    </div>
-    <p class="read-the-docs">
-      Click on the Vite and TypeScript logos to learn more
-    </p>
-  </div>
-`;
+const viewApplication = createViewApplication(appElement);
 
-const counterElement = document.querySelector<HTMLButtonElement>("#counter");
+viewApplication.start();
 
-if (!counterElement) {
-  throw new Error("Unable to find counter element");
-}
+const view = new View();
 
-setupCounter(counterElement);
+viewApplication.addToScene(view);
+viewApplication.addToTicker(view.update);
+viewApplication.camera.position.z = 5;
