@@ -1,16 +1,18 @@
-import { BoxGeometry, Group, Mesh, MeshBasicMaterial } from "three";
+import { ExampleComponent } from "./components";
+import { Group } from "three";
 
 export class View extends Group {
+  #exampleComponent: ExampleComponent;
+
   public constructor() {
     super();
 
-    const geometry = new BoxGeometry(1, 1, 1);
-    const material = new MeshBasicMaterial({ color: 0x00ff00 });
-    const cube = new Mesh(geometry, material);
-    this.add(cube);
+    this.#exampleComponent = new ExampleComponent({ dimensions: { x: 1, y: 1, z: 1 } });
+    this.add(this.#exampleComponent);
   }
 
   public update = (delta: number): void => {
-    this.rotation.x = this.rotation.x + delta;
+    this.#exampleComponent.rotation.x = this.#exampleComponent.rotation.x + delta;
+    this.#exampleComponent.rotation.y = this.#exampleComponent.rotation.y + delta * 0.5;
   };
 }
