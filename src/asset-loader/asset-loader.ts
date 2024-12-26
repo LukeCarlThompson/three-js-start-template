@@ -5,7 +5,7 @@ import type { AssetManifest } from "./asset-manifest";
 import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
-export type LoadAssetManifestProps = {
+export type LoadAssetManifestProps<AssetManifest> = {
   assetManifest: AssetManifest;
   onProgress?: (percentageLoaded: number) => void;
 };
@@ -28,21 +28,21 @@ export class AssetLoader {
     this.#gltfLoader.setDRACOLoader(this.#dracoLoader);
   }
 
-  public readonly loadAssetManifest = async ({
+  public readonly loadAssetManifest = async <Manifest extends AssetManifest>({
     assetManifest,
     onProgress = () => undefined,
-  }: LoadAssetManifestProps): Promise<AssetCache<typeof assetManifest>> => {
+  }: LoadAssetManifestProps<Manifest>): Promise<AssetCache<Manifest>> => {
     this.#loadingManager.onProgress = (_url: string, loaded: number, total: number) => {
-      onProgress((total / loaded) * 100);
+      onProgress((loaded / total) * 100 || 0);
     };
 
     const { texture, audio, gltf } = assetManifest;
 
-    const assetCache: AssetCache<typeof assetManifest> = {
+    const assetCache = {
       texture: {},
       audio: {},
       gltf: {},
-    };
+    } as AssetCache<Manifest>;
 
     texture.forEach(({ name, url }) => {
       const asyncFunction = async ({ name, url }: { name: string; url: string }) => {
@@ -52,7 +52,7 @@ export class AssetLoader {
         texture.wrapT = RepeatWrapping;
         texture.magFilter = NearestFilter;
         texture.flipY = false;
-        assetCache.texture[name] = texture;
+        assetCache.texture[name as Manifest["texture"][number]["name"]] = texture;
       };
 
       this.promises.push(asyncFunction({ name, url }));
@@ -61,7 +61,7 @@ export class AssetLoader {
     audio.forEach(({ name, url }) => {
       const asyncFunction = async ({ name, url }: { name: string; url: string }) => {
         const asset = await this.#audioLoader.loadAsync(url);
-        assetCache.audio[name] = asset;
+        assetCache.audio[name as Manifest["audio"][number]["name"]] = asset;
       };
 
       this.promises.push(asyncFunction({ name, url }));
@@ -71,7 +71,7 @@ export class AssetLoader {
       const asyncFunction = async ({ name, url }: { name: string; url: string }) => {
         const asset = await this.#gltfLoader.loadAsync(url);
 
-        assetCache.gltf[name] = asset;
+        assetCache.gltf[name as Manifest["gltf"][number]["name"]] = asset;
       };
 
       this.promises.push(asyncFunction({ name, url }));

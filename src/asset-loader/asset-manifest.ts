@@ -1,5 +1,5 @@
 export type AssetManifest = {
-  texture: { name: string; url: string }[];
-  audio: { name: string; url: string }[];
-  gltf: { name: string; url: string }[];
+  texture: readonly { name: string; url: string }[];
+  audio: readonly { name: string; url: string }[];
+  gltf: readonly { name: string; url: string }[];
 };
