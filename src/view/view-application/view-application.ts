@@ -1,4 +1,4 @@
-import { PerspectiveCamera, WebGLRenderer } from "three";
+import { PCFSoftShadowMap, PerspectiveCamera, WebGLRenderer } from "three";
 
 import { RenderResolutionController } from "./render-resolution-controller";
 import type { Scene } from "three";
@@ -15,7 +15,7 @@ export type ViewApplicationProps = {
 };
 
 export class ViewApplication {
-  #renderer: WebGLRenderer;
+  public readonly renderer: WebGLRenderer;
   #resolutionController: RenderResolutionController;
   #ticker: Ticker;
   public scene?: Scene;
@@ -34,15 +34,18 @@ export class ViewApplication {
 
     this.camera = new PerspectiveCamera(75, clientWidth / clientHeight, 0.1, 1000);
 
-    this.#renderer = new WebGLRenderer({
+    this.renderer = new WebGLRenderer({
       powerPreference: "high-performance",
       antialias: true,
     });
 
-    rendererParentElement.appendChild(this.#renderer.domElement);
+    this.renderer.shadowMap.enabled = true;
+    this.renderer.shadowMap.type = PCFSoftShadowMap;
+
+    rendererParentElement.appendChild(this.renderer.domElement);
 
     this.#resolutionController = new RenderResolutionController({
-      renderer: this.#renderer,
+      renderer: this.renderer,
       camera: this.camera,
       size: {
         width: clientWidth,
@@ -84,6 +87,6 @@ export class ViewApplication {
 
   #update = (): void => {
     if (this.scene === undefined) return;
-    this.#renderer.render(this.scene, this.camera);
+    this.renderer.render(this.scene, this.camera);
   };
 }

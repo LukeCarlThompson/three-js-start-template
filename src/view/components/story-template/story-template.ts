@@ -16,17 +16,9 @@ export const createStoryTemplate = (): {
   storyElement.style.height = "100%";
 
   const stats = new Stats({
-    trackGPU: false,
+    trackGPU: true,
     trackHz: false,
     trackCPT: false,
-    logsPerSecond: 4,
-    graphsPerSecond: 30,
-    samplesLog: 40,
-    samplesGraph: 10,
-    precision: 2,
-    horizontal: true,
-    minimal: false,
-    mode: 0,
   });
 
   const viewApplication = createViewApplication(
@@ -39,6 +31,8 @@ export const createStoryTemplate = (): {
       stats.update();
     }
   );
+
+  void stats.init(viewApplication.renderer);
 
   viewApplication.start();
 
