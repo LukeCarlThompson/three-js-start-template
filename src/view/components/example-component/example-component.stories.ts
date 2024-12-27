@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/html";
+import { Scene } from "three";
 import { createStoryTemplate } from "../story-template";
 import type { ExampleComponentProps } from "./example-component";
 import { ExampleComponent } from "./example-component";
@@ -14,7 +15,10 @@ const meta = {
       title: "Folder",
     });
 
-    viewApplication.addToScene(exampleComponent);
+    const scene = new Scene();
+
+    viewApplication.scene = scene;
+    scene.add(exampleComponent);
     viewApplication.addToTicker(exampleComponent.update);
     viewApplication.camera.position.z = 5;
 

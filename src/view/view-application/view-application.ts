@@ -1,7 +1,7 @@
-import { PerspectiveCamera, Scene, WebGLRenderer } from "three";
+import { PerspectiveCamera, WebGLRenderer } from "three";
 
-import type { Object3D } from "three";
 import { RenderResolutionController } from "./render-resolution-controller";
+import type { Scene } from "three";
 import { Ticker } from "./ticker";
 import type { UpdateFunction } from "./ticker";
 
@@ -17,8 +17,8 @@ export type ViewApplicationProps = {
 export class ViewApplication {
   #renderer: WebGLRenderer;
   #resolutionController: RenderResolutionController;
-  #scene: Scene;
   #ticker: Ticker;
+  public scene?: Scene;
   public readonly camera: PerspectiveCamera;
 
   public constructor({
@@ -32,7 +32,6 @@ export class ViewApplication {
     const clientWidth = window.innerWidth;
     const clientHeight = window.innerHeight;
 
-    this.#scene = new Scene();
     this.camera = new PerspectiveCamera(75, clientWidth / clientHeight, 0.1, 1000);
 
     this.#renderer = new WebGLRenderer({
@@ -63,14 +62,6 @@ export class ViewApplication {
     this.#resolutionController.setQuality(percentage);
   }
 
-  public addToScene(object: Object3D): void {
-    this.#scene.add(object);
-  }
-
-  public removeFromScene(object: Object3D): void {
-    this.#scene.remove(object);
-  }
-
   public addToTicker(updateFunction: UpdateFunction): void {
     this.#ticker.add(updateFunction);
   }
@@ -92,6 +83,7 @@ export class ViewApplication {
   }
 
   #update = (): void => {
-    this.#renderer.render(this.#scene, this.camera);
+    if (this.scene === undefined) return;
+    this.#renderer.render(this.scene, this.camera);
   };
 }

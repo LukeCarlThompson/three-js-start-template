@@ -1,7 +1,8 @@
-import { ExampleComponent } from "./components";
-import { Group } from "three";
+import { Fog, HemisphereLight, Scene } from "three";
 
-export class View extends Group {
+import { ExampleComponent } from "./components";
+
+export class View extends Scene {
   #exampleComponent: ExampleComponent;
 
   public constructor() {
@@ -9,6 +10,9 @@ export class View extends Group {
 
     this.#exampleComponent = new ExampleComponent({ dimensions: { x: 1, y: 1, z: 1 } });
     this.add(this.#exampleComponent);
+
+    this.add(new HemisphereLight(0xffffff, 0x080820, 1.5));
+    this.fog = new Fog(0xffffff, 10, 100);
   }
 
   public update = (delta: number): void => {
