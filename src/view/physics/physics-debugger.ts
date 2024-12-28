@@ -1,8 +1,8 @@
 import { BufferAttribute, BufferGeometry, LineBasicMaterial, LineSegments } from "three";
 
-import type { World } from "@dimforge/rapier3d";
+import type { World } from "@dimforge/rapier3d-compat";
 
-type PhysicsDebuggerProps = {
+export type PhysicsDebuggerProps = {
   physicsWorld: World;
 };
 
