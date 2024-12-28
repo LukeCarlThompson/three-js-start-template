@@ -9,8 +9,10 @@ export class ExampleComponent extends Group {
     super();
 
     const geometry = new BoxGeometry(x, y, z);
-    const material = new MeshBasicMaterial({ color: 0x00ff00 });
+    const material = new MeshBasicMaterial({ color: 0xffffff });
     const cube = new Mesh(geometry, material);
+    cube.castShadow = true;
+    cube.receiveShadow = true;
     this.add(cube);
   }
 
