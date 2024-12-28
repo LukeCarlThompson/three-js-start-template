@@ -31,5 +31,6 @@ export class PhysicsDebugger {
 
     this.#geometry.setAttribute("position", vertices);
     this.#geometry.setAttribute("color", colors);
+    this.#geometry.computeBoundingSphere();
   };
 }
