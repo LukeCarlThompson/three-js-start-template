@@ -1,4 +1,4 @@
-import { PCFSoftShadowMap, PerspectiveCamera, WebGLRenderer } from "three";
+import { PerspectiveCamera, VSMShadowMap, WebGLRenderer } from "three";
 
 import { RenderResolutionController } from "./render-resolution-controller";
 import type { Scene } from "three";
@@ -40,7 +40,7 @@ export class ViewApplication {
     });
 
     this.renderer.shadowMap.enabled = true;
-    this.renderer.shadowMap.type = PCFSoftShadowMap;
+    this.renderer.shadowMap.type = VSMShadowMap;
 
     rendererParentElement.appendChild(this.renderer.domElement);
 
