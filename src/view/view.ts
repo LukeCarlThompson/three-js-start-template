@@ -35,7 +35,6 @@ export class View extends Scene {
   #userInput: UserInput;
   #physicsWorld: World;
   #eventQueue: EventQueue;
-  // #physicsDebugger: PhysicsDebugger;
   #config: {
     cameraFollowDistance: number;
     renderDistance: number;
@@ -44,14 +43,11 @@ export class View extends Scene {
 
   public constructor({ environmentModel, camera, userInput, physicsWorld, physicsEventQueue }: ViewProps) {
     super();
+    const cameraFollowDistance = 80;
     this.#config = {
-      cameraFollowDistance: 80,
-      renderDistance: 80 + 50,
+      cameraFollowDistance,
+      renderDistance: cameraFollowDistance + 50,
     };
-
-    // this.#physicsDebugger = new PhysicsDebugger({ physicsWorld });
-
-    // // this.add(this.#physicsDebugger.debugGraphics);
 
     this.#userInput = userInput;
     this.#physicsWorld = physicsWorld;

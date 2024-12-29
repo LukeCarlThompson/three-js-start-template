@@ -197,13 +197,12 @@ export class Player extends Group {
       .enabledTranslations(true, true, false)
       .enabledRotations(false, false, false)
       .setCcdEnabled(true)
+      .setLinearDamping(1)
+      .setAngularDamping(0)
       .setUserData({
         name: "Player",
       });
     const rigidBody = physicsWorld.createRigidBody(rigidBodyDesc);
-    rigidBody.setLinearDamping(1);
-    rigidBody.setAngularDamping(0);
-    rigidBody.setEnabledTranslations(true, true, false, true);
     const colliderDesc = ColliderDesc.ball(0.4)
       .setRestitution(0)
       .setDensity(0)
