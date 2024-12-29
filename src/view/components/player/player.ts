@@ -32,7 +32,7 @@ export class Player extends Group {
     boostForce: 20000 * 1,
     boostMax: 10000,
     boostUsageRate: 7000,
-    boostRegenerationRate: 5000,
+    boostRegenerationRate: 15000,
     boostCooldownTime: 1,
   };
   readonly #state = {
