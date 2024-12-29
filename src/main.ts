@@ -47,7 +47,7 @@ const startApp = async (): Promise<void> => {
     tweakpane.element.style.right = "10px";
     tweakpane.element.style.zIndex = "2";
 
-    appElement.appendChild(tweakpane.element);
+    document.body.appendChild(tweakpane.element);
 
     // Render resolution controls
     const resolutionFolder = tweakpane.addFolder({

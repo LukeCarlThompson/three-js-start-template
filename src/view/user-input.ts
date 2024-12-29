@@ -34,6 +34,8 @@ export class UserInput extends EventTarget {
   }
 
   #keyDownHandler = (e: KeyboardEvent) => {
+    if (e.target !== this.#parentElement) return;
+
     if (this.#gameKeys.includes(e.key)) {
       e.preventDefault();
       e.stopPropagation();
@@ -54,6 +56,8 @@ export class UserInput extends EventTarget {
   };
 
   readonly #keyUpHandler = (e: KeyboardEvent) => {
+    if (e.target !== this.#parentElement) return;
+
     if (this.#gameKeys.includes(e.key)) {
       e.preventDefault();
       e.stopPropagation();
@@ -73,6 +77,7 @@ export class UserInput extends EventTarget {
   };
 
   readonly #mouseDownHandler = (e: MouseEvent) => {
+    if (e.target instanceof Node && !this.#parentElement.contains(e.target)) return;
     e.preventDefault();
     e.stopPropagation();
 
@@ -83,11 +88,13 @@ export class UserInput extends EventTarget {
   };
 
   readonly #mouseUpHandler = (e: MouseEvent) => {
+    if (e.target instanceof Node && !this.#parentElement.contains(e.target)) return;
     e.preventDefault();
     e.stopPropagation();
   };
 
   readonly #touchStartHandler = (e: TouchEvent) => {
+    if (e.target instanceof Node && !this.#parentElement.contains(e.target)) return;
     e.preventDefault();
     e.stopPropagation();
 
@@ -103,6 +110,7 @@ export class UserInput extends EventTarget {
   };
 
   readonly #touchMoveHandler = (e: TouchEvent) => {
+    if (e.target instanceof Node && !this.#parentElement.contains(e.target)) return;
     e.preventDefault();
     e.stopPropagation();
 
@@ -113,6 +121,7 @@ export class UserInput extends EventTarget {
   };
 
   readonly #touchEndHandler = (e: TouchEvent) => {
+    if (e.target instanceof Node && !this.#parentElement.contains(e.target)) return;
     e.preventDefault();
     e.stopPropagation();
 
@@ -122,6 +131,7 @@ export class UserInput extends EventTarget {
   };
 
   readonly #mouseMovehandler = (e: MouseEvent) => {
+    if (e.target instanceof Node && !this.#parentElement.contains(e.target)) return;
     e.preventDefault();
     e.stopPropagation();
 
