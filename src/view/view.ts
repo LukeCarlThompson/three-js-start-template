@@ -12,7 +12,7 @@ import {
   Scene,
   SpotLight,
 } from "three";
-import type { BufferGeometry, Material, Object3D, PerspectiveCamera } from "three";
+import type { BufferGeometry, Light, Material, Object3D, PerspectiveCamera } from "three";
 import type { Collider, EventQueue, World } from "@dimforge/rapier3d-compat";
 import { ExampleComponent, Player } from "./components";
 
@@ -37,15 +37,18 @@ export class View extends Scene {
   #eventQueue: EventQueue;
   #config: {
     cameraFollowDistance: number;
+    cameraVerticalOffset: number;
     renderDistance: number;
   };
   #terrainColliders: Collider[] = [];
+  #spotLight?: Light;
 
   public constructor({ environmentModel, camera, userInput, physicsWorld, physicsEventQueue }: ViewProps) {
     super();
     const cameraFollowDistance = 80;
     this.#config = {
       cameraFollowDistance,
+      cameraVerticalOffset: 2,
       renderDistance: cameraFollowDistance + 50,
     };
 
@@ -68,10 +71,6 @@ export class View extends Scene {
     const playerModel = new Mesh(geometry, material);
     playerModel.castShadow = true;
     playerModel.receiveShadow = true;
-    const light = new PointLight(0xffff3c4, 0.3, 10, 0.1);
-    light.castShadow = true;
-    light.position.set(0, 0, 0);
-    playerModel.add(light);
 
     this.#player = new Player({ model: playerModel, physicsWorld, position: { x: 0, y: 3, z: 0 } });
     this.#player.position.set(0, 5, 0);
@@ -108,16 +107,22 @@ export class View extends Scene {
 
       if (child instanceof PointLight || child instanceof SpotLight) {
         child.castShadow = true;
-        child.shadow.mapSize.width = 512 * 2;
-        child.shadow.mapSize.height = 512 * 2;
-        child.shadow.camera.near = 0.5;
-        child.shadow.camera.far = 500;
-        child.shadow.bias = 0.00001;
+        const shadowMapSizeMultiplier = 2;
+        child.shadow.mapSize.width = 512 * shadowMapSizeMultiplier;
+        child.shadow.mapSize.height = 512 * shadowMapSizeMultiplier;
+        child.shadow.camera.near = 10;
+        child.shadow.camera.far = 100;
+        child.shadow.radius = 4;
+        child.shadow.blurSamples = 6;
+        this.#spotLight = child;
         objectsToAddToToScene.push(child);
       }
     });
 
     const batchedMesh = new BatchedMesh(environmentModel.children.length, 5000, 10000, environmentMaterial);
+
+    batchedMesh.castShadow = true;
+    batchedMesh.receiveShadow = true;
 
     objectsToAddToBatchedMesh.forEach((object) => {
       const geometryId = batchedMesh.addGeometry(object.geometry as BufferGeometry);
@@ -169,7 +174,12 @@ export class View extends Scene {
       Math.abs(this.#camera.position.x - this.#player.position.x);
 
     this.#camera.position.x = damp(this.#camera.position.x, this.#player.position.x, dampXMultiplier, delta);
-    this.#camera.position.y = damp(this.#camera.position.y, this.#player.position.y, dampYMultiplier, delta);
+    this.#camera.position.y = damp(
+      this.#camera.position.y,
+      this.#player.position.y + this.#config.cameraVerticalOffset,
+      dampYMultiplier,
+      delta
+    );
     this.#camera.position.z = damp(
       this.#camera.position.z,
       this.#player.position.z + this.#config.cameraFollowDistance,
@@ -182,6 +192,12 @@ export class View extends Scene {
       void handle2;
       void started;
     });
+
+    this.#spotLight?.lookAt(this.#player.position);
+    if (this.#spotLight) {
+      this.#spotLight.position.x = this.#player.position.x;
+      this.#spotLight.position.y = this.#player.position.y + 10;
+    }
 
     this.#physicsWorld.timestep = delta;
     this.#physicsWorld.step(this.#eventQueue);
