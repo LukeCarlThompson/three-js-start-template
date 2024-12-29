@@ -58,7 +58,6 @@ export class Player extends Group {
     this.proximitySensor = this.#createProximitySensor(physicsWorld);
 
     this.#model = model;
-    model.position.set(0, 0.1, 0);
 
     // Boost indicator
     const geometry = new BoxGeometry(0.3, 0.3, 0.3);
