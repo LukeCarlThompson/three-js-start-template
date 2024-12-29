@@ -64,7 +64,7 @@ export class View extends Scene {
     this.#camera.updateProjectionMatrix();
     this.#camera.position.set(0, 3, this.#config.cameraFollowDistance);
     this.#exampleComponent = new ExampleComponent({ dimensions: { x: 1, y: 1, z: 1 } });
-    this.#exampleComponent.position.y = 3;
+    this.#exampleComponent.position.y = 8;
 
     const geometry = new BoxGeometry(0.8, 1, 0.8);
     const material = new MeshBasicMaterial({ color: 0x000000 });
