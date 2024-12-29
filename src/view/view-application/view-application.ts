@@ -1,4 +1,4 @@
-import { PerspectiveCamera, VSMShadowMap, WebGLRenderer } from "three";
+import { ACESFilmicToneMapping, PerspectiveCamera, VSMShadowMap, WebGLRenderer } from "three";
 
 import { RenderResolutionController } from "./render-resolution-controller";
 import type { Scene } from "three";
@@ -38,6 +38,7 @@ export class ViewApplication {
       powerPreference: "high-performance",
       antialias: true,
     });
+    this.renderer.toneMapping = ACESFilmicToneMapping;
 
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = VSMShadowMap;
