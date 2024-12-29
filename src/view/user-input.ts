@@ -1,4 +1,4 @@
-export class UserInput {
+export class UserInput extends EventTarget {
   public readonly state = {
     joystick: {
       x: 0,
@@ -15,9 +15,13 @@ export class UserInput {
   };
   readonly #gameKeys = ["w", "a", "d", "s", " ", "ArrowUp", "ArrowLeft", "ArrowRight", "ArrowDown"];
   #parentElement: HTMLElement;
+  #jumpEvent: Event;
 
   public constructor(parentElement: HTMLElement) {
+    super();
     this.#parentElement = parentElement;
+
+    this.#jumpEvent = new CustomEvent("jump-pressed");
 
     parentElement.addEventListener("keydown", this.#keyDownHandler);
     parentElement.addEventListener("keyup", this.#keyUpHandler);
@@ -39,6 +43,7 @@ export class UserInput {
 
     if (e.key === "w" || e.key === "ArrowUp" || e.key === " ") {
       this.state.up = true;
+      this.dispatchEvent(this.#jumpEvent);
     } else if (e.key === "s" || e.key === "ArrowDown") {
       this.state.down = true;
     } else if (e.key === "a" || e.key === "ArrowLeft") {
