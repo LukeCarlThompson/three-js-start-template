@@ -99,6 +99,7 @@ export class View extends Scene {
           const indices = bufferGeometry.index?.array as Uint32Array;
           const colliderDesc = ColliderDesc.trimesh(vertices, indices);
           colliderDesc.translation = child.position;
+          colliderDesc.rotation = child.quaternion;
           colliderDesc.friction = 30;
           this.#terrainColliders.push(physicsWorld.createCollider(colliderDesc));
         }
