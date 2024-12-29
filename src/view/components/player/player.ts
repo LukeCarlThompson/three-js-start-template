@@ -22,10 +22,14 @@ export class Player extends Group {
   readonly #rayDown: Ray;
   readonly #physicsWorld: World;
   readonly #config = {
-    jumpForce: 60,
-    wallJumpForce: 60,
-    wallJumpHorizontalForce: 40,
-    boostForce: 20000,
+    playerMass: 5,
+    playerFriction: 0.5,
+    playerVelocityLimit: 10,
+    horizontalMovementForce: 200 * 1,
+    jumpForce: 60 * 1,
+    wallJumpForce: 40 * 1,
+    wallJumpHorizontalForce: 60 * 1,
+    boostForce: 20000 * 1,
     boostMax: 10000,
     boostUsageRate: 7000,
     boostRegenerationRate: 5000,
@@ -95,11 +99,11 @@ export class Player extends Group {
   };
 
   public readonly moveLeft = (): void => {
-    this.impulse.x += -100;
+    this.impulse.x += this.#config.horizontalMovementForce * -1;
   };
 
   public readonly moveRight = (): void => {
-    this.impulse.x += 100;
+    this.impulse.x += this.#config.horizontalMovementForce;
   };
 
   public readonly hitLeft = (): RayColliderHit | null => {
@@ -158,6 +162,13 @@ export class Player extends Group {
       this.rigidBody.applyImpulse(this.impulse, true);
     }
 
+    const velocity = this.rigidBody.linvel();
+
+    if (Math.abs(velocity.x) > this.#config.playerVelocityLimit) {
+      velocity.x = velocity.x * 0.9;
+      this.rigidBody.setLinvel(velocity, true);
+    }
+
     if (this.#state.lastBoostTime > this.#config.boostCooldownTime && this.hitDown()) {
       this.#state.boostRemaining = Math.min(
         this.#state.boostRemaining + this.#config.boostRegenerationRate * delta,
@@ -206,8 +217,8 @@ export class Player extends Group {
     const colliderDesc = ColliderDesc.ball(0.4)
       .setRestitution(0)
       .setDensity(0)
-      .setFriction(0)
-      .setMass(5)
+      .setFriction(this.#config.playerFriction)
+      .setMass(this.#config.playerMass)
       .setFrictionCombineRule(CoefficientCombineRule.Min)
       .setRestitutionCombineRule(CoefficientCombineRule.Min)
       .setActiveEvents(ActiveEvents.COLLISION_EVENTS);
