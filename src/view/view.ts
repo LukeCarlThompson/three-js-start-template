@@ -1,27 +1,17 @@
 import * as BufferGeometryUtils from "three/addons/utils/BufferGeometryUtils.js";
 
-import {
-  BatchedMesh,
-  BoxGeometry,
-  Fog,
-  HemisphereLight,
-  Mesh,
-  MeshBasicMaterial,
-  MeshLambertMaterial,
-  PointLight,
-  Scene,
-  SpotLight,
-} from "three";
+import { ActiveEvents, ColliderDesc } from "@dimforge/rapier3d-compat";
+import { BatchedMesh, Fog, HemisphereLight, Mesh, MeshLambertMaterial, PointLight, Scene, SpotLight } from "three";
 import type { BufferGeometry, Light, Material, Object3D, PerspectiveCamera } from "three";
 import type { Collider, EventQueue, World } from "@dimforge/rapier3d-compat";
 import { ExampleComponent, Player } from "./components";
 
-import { ColliderDesc } from "@dimforge/rapier3d-compat";
 import type { UserInput } from "./user-input";
 import { damp } from "three/src/math/MathUtils.js";
 
 export type ViewProps = {
   environmentModel: Object3D;
+  playerModel: Object3D;
   camera: PerspectiveCamera;
   userInput: UserInput;
   physicsWorld: World;
@@ -41,9 +31,10 @@ export class View extends Scene {
     renderDistance: number;
   };
   #terrainColliders: Collider[] = [];
+  #goalSensor?: Collider = undefined;
   #spotLight?: Light;
 
-  public constructor({ environmentModel, camera, userInput, physicsWorld, physicsEventQueue }: ViewProps) {
+  public constructor({ environmentModel, playerModel, camera, userInput, physicsWorld, physicsEventQueue }: ViewProps) {
     super();
     const cameraFollowDistance = 80;
     this.#config = {
@@ -55,7 +46,7 @@ export class View extends Scene {
     this.#userInput = userInput;
     this.#physicsWorld = physicsWorld;
     this.#eventQueue = physicsEventQueue;
-    this.fog = new Fog(0x6d8091, this.#config.cameraFollowDistance * 0.9, this.#config.renderDistance);
+    this.fog = new Fog(0x456475, this.#config.cameraFollowDistance * 0.9, this.#config.renderDistance);
     this.background = this.fog.color;
 
     this.#camera = camera;
@@ -65,12 +56,6 @@ export class View extends Scene {
     this.#camera.position.set(0, 3, this.#config.cameraFollowDistance);
     this.#exampleComponent = new ExampleComponent({ dimensions: { x: 1, y: 1, z: 1 } });
     this.#exampleComponent.position.y = 8;
-
-    const geometry = new BoxGeometry(0.8, 1, 0.8);
-    const material = new MeshBasicMaterial({ color: 0x000000 });
-    const playerModel = new Mesh(geometry, material);
-    playerModel.castShadow = true;
-    playerModel.receiveShadow = true;
 
     this.#player = new Player({ model: playerModel, physicsWorld, position: { x: 0, y: 3, z: 0 } });
     this.#player.position.set(0, 5, 0);
@@ -89,10 +74,24 @@ export class View extends Scene {
         environmentMaterial = child.material as Material;
         objectsToAddToBatchedMesh.push(child);
 
+        // Create sensor
+        if (child.name.includes("goal.sensor")) {
+          const bufferGeometry = BufferGeometryUtils.mergeVertices(child.geometry as BufferGeometry);
+          bufferGeometry.scale(child.scale.x, child.scale.y, child.scale.z);
+          const vertices = bufferGeometry.attributes.position.array as Float32Array;
+          const indices = bufferGeometry.index?.array as Uint32Array;
+          const colliderDesc = ColliderDesc.trimesh(vertices, indices);
+          colliderDesc.translation = child.position;
+          colliderDesc.rotation = child.quaternion;
+          colliderDesc.setSensor(true).setActiveEvents(ActiveEvents.COLLISION_EVENTS);
+          this.#goalSensor = physicsWorld.createCollider(colliderDesc);
+
+          return;
+        }
+
         // Create collider
         if (child.name.includes("Ground")) {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-          const bufferGeometry = BufferGeometryUtils.mergeVertices(child.geometry);
+          const bufferGeometry = BufferGeometryUtils.mergeVertices(child.geometry as BufferGeometry);
           bufferGeometry.scale(child.scale.x, child.scale.y, child.scale.z);
           const vertices = bufferGeometry.attributes.position.array as Float32Array;
           const indices = bufferGeometry.index?.array as Uint32Array;
@@ -171,7 +170,7 @@ export class View extends Scene {
       Math.abs(this.#camera.position.x - this.#player.position.x);
     const dampYMultiplier =
       Math.abs(this.#camera.position.y - this.#player.position.y) *
-      Math.abs(this.#camera.position.x - this.#player.position.x);
+      Math.abs(this.#camera.position.y - this.#player.position.y);
 
     this.#camera.position.x = damp(this.#camera.position.x, this.#player.position.x, dampXMultiplier, delta);
     this.#camera.position.y = damp(
@@ -188,9 +187,11 @@ export class View extends Scene {
     );
 
     this.#eventQueue.drainCollisionEvents((handle1, handle2, started) => {
-      void handle1;
-      void handle2;
-      void started;
+      const goal = this.#goalSensor?.handle === handle1 || this.#goalSensor?.handle === handle2;
+
+      if (started && goal) {
+        console.log("😎 goal");
+      }
     });
 
     this.#spotLight?.lookAt(this.#player.position);

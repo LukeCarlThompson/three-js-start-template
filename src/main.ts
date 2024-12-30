@@ -89,7 +89,8 @@ const startApp = async (): Promise<void> => {
   const { world, eventQueue } = await createPhysicsWorld();
 
   const view = new View({
-    environmentModel: assetCache.gltf.scene.scene,
+    environmentModel: assetCache.gltf.terrain.scene,
+    playerModel: assetCache.gltf.player.scene,
     camera: viewApplication.camera,
     userInput,
     physicsEventQueue: eventQueue,

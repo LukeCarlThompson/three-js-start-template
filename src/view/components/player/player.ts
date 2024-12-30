@@ -1,6 +1,7 @@
 import { ActiveEvents, CoefficientCombineRule, ColliderDesc, Ray, RigidBodyDesc } from "@dimforge/rapier3d-compat";
 import { BoxGeometry, Group, Mesh, MeshBasicMaterial, Vector3 } from "three";
 import type { Collider, RayColliderHit, RigidBody, World } from "@dimforge/rapier3d-compat";
+import { damp, degToRad } from "three/src/math/MathUtils.js";
 
 import type { Object3D } from "three";
 
@@ -23,21 +24,25 @@ export class Player extends Group {
   readonly #physicsWorld: World;
   readonly #config = {
     playerMass: 5,
-    playerFriction: 0.5,
+    playerFriction: 0.2,
     playerVelocityLimit: 10,
-    horizontalMovementForce: 200 * 1,
+    horizontalMovementForce: 100 * 1,
     jumpForce: 60 * 1,
     wallJumpForce: 40 * 1,
-    wallJumpHorizontalForce: 60 * 1,
-    boostForce: 20000 * 1,
+    wallJumpHorizontalForce: 40 * 1,
+    boostForce: 15000 * 1,
     boostMax: 10000,
-    boostUsageRate: 7000,
+    boostUsageRate: 3000,
     boostRegenerationRate: 15000,
-    boostCooldownTime: 1,
   };
-  readonly #state = {
+  readonly #state: {
+    boostRemaining: number;
+    direction: "left" | "right";
+    isBoosting: boolean;
+  } = {
     boostRemaining: 10000,
-    lastBoostTime: 0,
+    direction: "right",
+    isBoosting: false,
   };
 
   public constructor({ physicsWorld, model, position }: PlayerProps) {
@@ -57,13 +62,25 @@ export class Player extends Group {
 
     this.proximitySensor = this.#createProximitySensor(physicsWorld);
 
+    model.traverse((child) => {
+      if (child instanceof Mesh) {
+        child.castShadow = true;
+        child.receiveShadow = true;
+
+        return;
+      }
+    });
+
+    model.castShadow = true;
+    model.receiveShadow = true;
+    model.position.set(0, -0.45, 0);
     this.#model = model;
 
     // Boost indicator
-    const geometry = new BoxGeometry(0.3, 0.3, 0.3);
+    const geometry = new BoxGeometry(0.2, 0.5, 0.2);
     const material = new MeshBasicMaterial({ color: 0xffc400 });
     this.#boostIndicator = new Mesh(geometry, material);
-    this.#boostIndicator.position.set(0, 0.5, 0);
+    this.#boostIndicator.position.set(0, 0.3, -0.4);
 
     this.#model.add(this.#boostIndicator);
     this.add(this.#model);
@@ -93,16 +110,17 @@ export class Player extends Group {
     if (this.#state.boostRemaining === 0) return;
     this.impulse.y += this.#config.boostForce * delta;
     this.#state.boostRemaining = Math.max(this.#state.boostRemaining - this.#config.boostUsageRate * delta, 0);
-
-    this.#state.lastBoostTime = 0;
+    this.#state.isBoosting = true;
   };
 
   public readonly moveLeft = (): void => {
     this.impulse.x += this.#config.horizontalMovementForce * -1;
+    this.#state.direction = "left";
   };
 
   public readonly moveRight = (): void => {
     this.impulse.x += this.#config.horizontalMovementForce;
+    this.#state.direction = "right";
   };
 
   public readonly hitLeft = (): RayColliderHit | null => {
@@ -168,23 +186,30 @@ export class Player extends Group {
       this.rigidBody.setLinvel(velocity, true);
     }
 
-    if (this.#state.lastBoostTime > this.#config.boostCooldownTime && this.hitDown()) {
+    if (this.hitDown()) {
       this.#state.boostRemaining = Math.min(
         this.#state.boostRemaining + this.#config.boostRegenerationRate * delta,
         this.#config.boostMax
       );
     }
 
-    this.#state.lastBoostTime += delta;
+    const rotation = this.#state.direction === "left" ? -90 : 90;
+    this.#model.rotation.y = damp(this.#model.rotation.y, degToRad(rotation), 10, delta);
+
+    const tilt = this.#state.direction === "left" ? 0.1 : -0.1;
+    this.rotation.z = damp(this.rotation.z, tilt + velocity.x * -0.03, 10, delta);
 
     const boostPercentRemaining = this.#state.boostRemaining / this.#config.boostMax;
-    this.#boostIndicator.scale.set(boostPercentRemaining, boostPercentRemaining, boostPercentRemaining);
+    const boostIndicatorScale = this.#state.isBoosting ? boostPercentRemaining : 0;
+    this.#boostIndicator.scale.x = damp(this.#boostIndicator.scale.x, boostIndicatorScale, 10, delta);
+    this.#boostIndicator.scale.z = damp(this.#boostIndicator.scale.z, boostIndicatorScale, 10, delta);
 
     const frictionCombineRule =
       !this.hitDown() && (this.hitLeft() || this.hitRight()) ? CoefficientCombineRule.Max : CoefficientCombineRule.Min;
     this.collider.setFrictionCombineRule(frictionCombineRule);
 
     this.#resetImpulse();
+    this.#state.isBoosting = false;
   };
 
   #resetImpulse = (): void => {
@@ -197,8 +222,6 @@ export class Player extends Group {
     const position = this.rigidBody.translation();
     this.proximitySensor.setTranslation(position);
     this.position.set(position.x, position.y, position.z);
-    const velocity = this.rigidBody.linvel();
-    this.#model.rotation.z = velocity.x * -0.03;
   }
 
   #createPhysicsBody(physicsWorld: World) {
