@@ -16,6 +16,7 @@ export type ViewProps = {
   userInput: UserInput;
   physicsWorld: World;
   physicsEventQueue: EventQueue;
+  onReachedGoal: () => void;
 };
 
 export class View extends Scene {
@@ -33,8 +34,17 @@ export class View extends Scene {
   #terrainColliders: Collider[] = [];
   #goalSensor?: Collider = undefined;
   #spotLight?: Light;
+  #onReachedGoal: () => void;
 
-  public constructor({ environmentModel, playerModel, camera, userInput, physicsWorld, physicsEventQueue }: ViewProps) {
+  public constructor({
+    environmentModel,
+    playerModel,
+    camera,
+    userInput,
+    physicsWorld,
+    physicsEventQueue,
+    onReachedGoal,
+  }: ViewProps) {
     super();
     const cameraFollowDistance = 80;
     this.#config = {
@@ -42,6 +52,8 @@ export class View extends Scene {
       cameraVerticalOffset: 2,
       renderDistance: cameraFollowDistance + 50,
     };
+
+    this.#onReachedGoal = onReachedGoal;
 
     this.#userInput = userInput;
     this.#physicsWorld = physicsWorld;
@@ -75,7 +87,7 @@ export class View extends Scene {
         objectsToAddToBatchedMesh.push(child);
 
         // Create sensor
-        if (child.name.includes("goal.sensor")) {
+        if (child.name.includes("goal_sensor")) {
           const bufferGeometry = BufferGeometryUtils.mergeVertices(child.geometry as BufferGeometry);
           bufferGeometry.scale(child.scale.x, child.scale.y, child.scale.z);
           const vertices = bufferGeometry.attributes.position.array as Float32Array;
@@ -190,7 +202,7 @@ export class View extends Scene {
       const goal = this.#goalSensor?.handle === handle1 || this.#goalSensor?.handle === handle2;
 
       if (started && goal) {
-        console.log("😎 goal");
+        this.#onReachedGoal();
       }
     });
 
