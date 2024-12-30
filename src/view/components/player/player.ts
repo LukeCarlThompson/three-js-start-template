@@ -32,7 +32,7 @@ export class Player extends Group {
     wallJumpHorizontalForce: 40 * 1,
     boostForce: 15000 * 1,
     boostMax: 10000,
-    boostUsageRate: 3000,
+    boostUsageRate: 5000,
     boostRegenerationRate: 15000,
   };
   readonly #state: {
