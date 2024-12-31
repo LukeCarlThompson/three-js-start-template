@@ -253,12 +253,10 @@ export class Player extends Group {
   }
 
   #createProximitySensor(physicsWorld: World) {
-    // TODO: Current bug in physics lib means sensor requires a rigibody. When the bug is fixed we can just use the collider by itself.
-    const sensorRigidBodyDesc = RigidBodyDesc.fixed()
-      .setTranslation(this.position.x, this.position.y, this.position.z)
-      .setUserData({ name: "proximity sensor rigid body" });
-    const proximitySensor = physicsWorld.createRigidBody(sensorRigidBodyDesc);
-    const proximityColliderDesc = ColliderDesc.ball(2).setActiveEvents(ActiveEvents.COLLISION_EVENTS).setSensor(true);
-    return physicsWorld.createCollider(proximityColliderDesc, proximitySensor);
+    const proximityColliderDesc = ColliderDesc.ball(2)
+      .setActiveEvents(ActiveEvents.COLLISION_EVENTS)
+      .setSensor(true)
+      .setTranslation(this.position.x, this.position.y, this.position.z);
+    return physicsWorld.createCollider(proximityColliderDesc);
   }
 }
