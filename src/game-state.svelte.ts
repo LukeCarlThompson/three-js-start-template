@@ -1,4 +1,4 @@
-export type GameLevelName = "level-01" | "level-02";
+export type GameLevelName = "tutorial" | "level-01" | "level-02";
 export type GameSceneName = "game" | "level-select" | "loading" | "title";
 export type GameLevel = { name: GameLevelName; unlocked: boolean };
 export type GameState = {
@@ -48,8 +48,9 @@ export const gameState = new Count({
   loadingPercent: 0,
   currentScene: "loading",
   levelTimerMs: 0,
-  selectedLevel: "level-01",
+  selectedLevel: "tutorial",
   levels: [
+    { name: "tutorial", unlocked: true },
     { name: "level-01", unlocked: true },
     { name: "level-02", unlocked: false },
   ],
