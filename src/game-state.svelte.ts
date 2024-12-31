@@ -11,11 +11,7 @@ export type GameState = {
 
 class Count {
   public state: GameState = $state<GameState>() as GameState;
-  #effects: ((state: GameState) => void)[] = [
-    (state) => {
-      console.log(state);
-    },
-  ];
+  #effects: ((state: GameState) => void)[] = [];
 
   public constructor(initialState: GameState) {
     this.state = initialState;
