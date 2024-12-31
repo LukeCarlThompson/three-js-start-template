@@ -1,10 +1,12 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
   export type GameOverlayProps = { children?: Snippet };
+  import { fade } from "svelte/transition";
+
   let { children }: GameOverlayProps = $props();
 </script>
 
-<div class={"overlay"}>
+<div class={"overlay"} transition:fade>
   {@render children?.()}
 </div>
 

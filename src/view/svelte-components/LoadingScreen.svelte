@@ -5,10 +5,11 @@
 </script>
 
 <script lang="ts">
+  import { scale } from "svelte/transition";
   let { loadingPercentage }: LoadingScreenProps = $props();
 </script>
 
-<div class={"loading"}>
+<div class={"loading"} transition:scale>
   <div class={"loading__inner"}>
     <h4>Loading</h4>
     <p>{Math.round(loadingPercentage)}%</p>

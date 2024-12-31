@@ -3,10 +3,12 @@
 </script>
 
 <script lang="ts">
+  import { scale } from "svelte/transition";
+
   let { onClicked }: TitleScreenProps = $props();
 </script>
 
-<div class={"title-screen"}>
+<div class={"title-screen"} transition:scale>
   <div class={"title-screen__inner"}>
     <button onclick={onClicked}>Start game</button>
   </div>

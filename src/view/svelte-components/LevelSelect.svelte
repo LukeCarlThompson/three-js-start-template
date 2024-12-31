@@ -8,10 +8,11 @@
 </script>
 
 <script lang="ts">
+  import { fade } from "svelte/transition";
   let { levels, selectedLevelName, onConfirmed, onSelectionClicked }: LevelSelectProps = $props();
 </script>
 
-<div class={"level-select"}>
+<div class={"level-select"} transition:fade>
   <div class={"level-select__inner"}>
     <fieldset>
       <legend>Level Select:</legend>
