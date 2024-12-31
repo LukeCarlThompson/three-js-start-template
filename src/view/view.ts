@@ -19,6 +19,8 @@ export type ViewProps = {
   onReachedGoal: () => void;
 };
 
+// TODO: Separate this into parts so the behaviour can be reused with another level model
+
 export class View extends Scene {
   #exampleComponent: ExampleComponent;
   #player: Player;

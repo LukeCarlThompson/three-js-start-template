@@ -24,7 +24,7 @@ export class Player extends Group {
   readonly #physicsWorld: World;
   readonly #config = {
     playerMass: 5,
-    playerFriction: 0.2,
+    playerFriction: 0.25,
     playerVelocityLimit: 10,
     horizontalMovementForce: 100 * 1,
     jumpForce: 60 * 1,

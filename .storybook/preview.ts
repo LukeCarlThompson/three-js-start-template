@@ -1,3 +1,5 @@
+import "../src/global-styles.scss";
+
 import type { Preview } from "@storybook/html";
 
 const preview: Preview = {

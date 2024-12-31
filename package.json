@@ -14,6 +14,7 @@
   "devDependencies": {
     "@chromatic-com/storybook": "3.2.3",
     "@eslint/js": "9.17.0",
+    "@preact/preset-vite": "2.9.3",
     "@storybook/addon-essentials": "8.4.7",
     "@storybook/addon-interactions": "8.4.7",
     "@storybook/blocks": "8.4.7",
@@ -24,6 +25,7 @@
     "@types/three": "0.171.0",
     "eslint": "9.17.0",
     "eslint-plugin-storybook": "0.11.1",
+    "sass-embedded": "1.76.0",
     "stats-gl": "3.6.0",
     "storybook": "8.4.7",
     "tweakpane": "4.0.5",
@@ -33,6 +35,9 @@
   },
   "dependencies": {
     "@dimforge/rapier3d-compat": "0.14.0",
+    "@picocss/pico": "2.0.6",
+    "@preact/signals": "2.0.0",
+    "preact": "10.25.4",
     "three": "0.171.0"
   },
   "eslintConfig": {

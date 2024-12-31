@@ -1,11 +1,10 @@
-import "./style.css";
+import "./global-styles.scss";
 
-import { UserInput, View, createPhysicsWorld, createViewApplication } from "./view";
-
-import { AssetLoader } from "./asset-loader";
 import type Stats from "stats-gl";
 import { assetManifest } from "./asset-manifest";
+import { createHtmlApp } from "./view";
 import { getConfig } from "./get-config";
+import { setGameScene } from "./game-state";
 
 const appElement = document.querySelector<HTMLDivElement>("#app");
 
@@ -26,15 +25,27 @@ const startApp = async (): Promise<void> => {
       trackCPT: true,
     });
 
-    appElement.appendChild(stats.dom);
+    document.body.appendChild(stats.dom);
   }
 
+  createHtmlApp(appElement);
+
+  const { setLoadingPercent } = await import("./game-state");
+  setLoadingPercent(1);
+  const { AssetLoader } = await import("./asset-loader");
+  setLoadingPercent(5);
+  const { UserInput, View, createPhysicsWorld, createViewApplication } = await import("./view");
+  setLoadingPercent(10);
+
   const assetLoader = new AssetLoader();
+
+  setLoadingPercent(12);
 
   const assetCache = await assetLoader.loadAssetManifest({
     assetManifest,
     onProgress: (percentage) => {
-      console.log("assets loaded percentage -->", percentage);
+      const modifiedPercentage = ((12 + percentage) / 112) * 100;
+      setLoadingPercent(modifiedPercentage);
     },
   });
 
@@ -85,6 +96,9 @@ const startApp = async (): Promise<void> => {
 
   appElement.focus();
   appElement.style.outline = "none";
+  appElement.addEventListener("click", () => {
+    appElement.focus();
+  });
 
   const { world, eventQueue } = await createPhysicsWorld();
 
@@ -95,8 +109,12 @@ const startApp = async (): Promise<void> => {
     userInput,
     physicsEventQueue: eventQueue,
     physicsWorld: world,
+    onReachedGoal: () => {
+      console.log("reached goal 🤩");
+    },
   });
 
+  setGameScene("title");
   viewApplication.scene = view;
   viewApplication.addToTicker(view.update);
   viewApplication.start();
