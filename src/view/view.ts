@@ -19,7 +19,7 @@ export type ViewProps = {
   onReachedGoal: () => void;
 };
 
-// TODO: Separate this into parts so the behaviour can be reused with another level model
+// TODO: Separate this into a game level component and a game logic component
 
 export class View extends Scene {
   #exampleComponent: ExampleComponent;

@@ -9,7 +9,7 @@ export const getConfig = (): Config => {
     return {
       stats: true,
       debugControls: true,
-      physicsDebugRender: false,
+      physicsDebugRender: true,
     };
   }
 

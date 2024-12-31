@@ -2,6 +2,7 @@ export type GameLevelName = "tutorial" | "level-01" | "level-02";
 export type GameSceneName = "game" | "level-select" | "loading" | "title" | "level-complete";
 export type GameLevel = { name: GameLevelName; unlocked: boolean };
 export type GameState = {
+  renderQuality: number;
   loadingPercent: number;
   currentScene: GameSceneName;
   levelTimerMs: number;
@@ -45,6 +46,7 @@ class Count {
 }
 
 export const gameState = new Count({
+  renderQuality: 100,
   loadingPercent: 0,
   currentScene: "loading",
   levelTimerMs: 0,

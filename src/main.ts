@@ -5,16 +5,102 @@ import { assetManifest } from "./asset-manifest";
 import { createSvelteApp } from "./view";
 import { getConfig } from "./get-config";
 
-const appElement = document.querySelector<HTMLDivElement>("#app");
-
-if (!appElement) {
-  throw new Error("Unable to find app element");
-}
-
 const startApp = async (): Promise<void> => {
+  const appElement = document.querySelector<HTMLDivElement>("#app");
+
+  if (!appElement) {
+    throw new Error("Unable to find app element");
+  }
+
+  createSvelteApp(appElement);
+  const { clientWidth, clientHeight } = appElement;
   const config = getConfig();
 
+  const { gameState } = await import("./game-state.svelte.ts");
+  gameState.setLoadingPercent(1);
+  const { AssetLoader } = await import("./asset-loader");
+  gameState.setLoadingPercent(5);
+  const { UserInput, View, createPhysicsWorld, createRenderer, Ticker, RenderResolutionController } = await import(
+    "./view"
+  );
+  const { PerspectiveCamera } = await import("three");
+  gameState.setLoadingPercent(10);
+
+  const assetLoader = new AssetLoader();
+
+  gameState.setLoadingPercent(12);
+
+  // The asset manifest should be broken up into ones specific for each view and ones that are used in all views.
+  const assetCache = await assetLoader.loadAssetManifest({
+    assetManifest,
+    onProgress: (percentage) => {
+      const modifiedPercentage = ((12 + percentage) / 112) * 100;
+      gameState.setLoadingPercent(modifiedPercentage);
+    },
+  });
+
+  const renderer = createRenderer();
+  appElement.appendChild(renderer.domElement);
+
+  const renderResolutionController = new RenderResolutionController({
+    maxPixels: 1920 * 1080,
+    minPixels: 400 * 600,
+    quality: gameState.state.renderQuality,
+    size: { width: clientWidth, height: clientHeight },
+  });
+
+  const userInput = new UserInput(appElement);
+
+  appElement.focus();
+  appElement.style.outline = "none";
+  appElement.addEventListener("click", () => {
+    appElement.focus();
+  });
+
+  const { world, eventQueue } = await createPhysicsWorld();
+
+  const camera = new PerspectiveCamera(75, clientWidth / clientHeight, 0.1, 1000);
+
+  // TODO: Write function to load and unload new Views.
+  const view = new View({
+    environmentModel: assetCache.gltf.terrain.scene,
+    playerModel: assetCache.gltf.player.scene,
+    camera: camera,
+    userInput,
+    physicsEventQueue: eventQueue,
+    physicsWorld: world,
+    onReachedGoal: () => {
+      gameState.setGameScene("level-complete");
+    },
+  });
+
+  gameState.setGameScene("title");
+
   let stats: Stats | undefined;
+  const ticker = new Ticker({
+    beforeTick: () => {
+      stats?.begin();
+    },
+    afterTick: () => {
+      stats?.end();
+      stats?.update();
+    },
+  });
+
+  ticker.add(view.update);
+  ticker.start();
+  ticker.add(() => {
+    renderer.render(view, camera);
+  });
+
+  const handleResize = () => {
+    const { clientWidth, clientHeight } = appElement;
+    renderResolutionController.size.width = clientWidth;
+    renderResolutionController.size.height = clientHeight;
+    renderResolutionController.applySizeAndQuality(renderer, camera);
+  };
+  window.addEventListener("resize", handleResize);
+  handleResize();
 
   if (config.stats) {
     const Stats = (await import("stats-gl")).default;
@@ -24,29 +110,10 @@ const startApp = async (): Promise<void> => {
       trackCPT: true,
     });
 
+    void stats.init(renderer);
+
     document.body.appendChild(stats.dom);
   }
-
-  createSvelteApp(appElement);
-
-  const { gameState } = await import("./game-state.svelte.ts");
-  gameState.setLoadingPercent(1);
-  const { AssetLoader } = await import("./asset-loader");
-  gameState.setLoadingPercent(5);
-  const { UserInput, View, createPhysicsWorld, createViewApplication } = await import("./view");
-  gameState.setLoadingPercent(10);
-
-  const assetLoader = new AssetLoader();
-
-  gameState.setLoadingPercent(12);
-
-  const assetCache = await assetLoader.loadAssetManifest({
-    assetManifest,
-    onProgress: (percentage) => {
-      const modifiedPercentage = ((12 + percentage) / 112) * 100;
-      gameState.setLoadingPercent(modifiedPercentage);
-    },
-  });
 
   if (config.debugControls) {
     const { Pane } = await import("tweakpane");
@@ -74,50 +141,11 @@ const startApp = async (): Promise<void> => {
         max: 100,
       })
       .on("change", () => {
-        viewApplication.setRenderQualityPercentage(quality.percentage);
+        gameState.state.renderQuality = quality.percentage;
+        renderResolutionController.quality = gameState.state.renderQuality;
+        renderResolutionController.applySizeAndQuality(renderer, camera);
       });
   }
-
-  const viewApplication = createViewApplication(
-    appElement,
-    () => {
-      stats?.begin();
-    },
-    () => {
-      stats?.end();
-      stats?.update();
-    }
-  );
-
-  void stats?.init(viewApplication.renderer);
-
-  const userInput = new UserInput(appElement);
-
-  appElement.focus();
-  appElement.style.outline = "none";
-  appElement.addEventListener("click", () => {
-    appElement.focus();
-  });
-
-  const { world, eventQueue } = await createPhysicsWorld();
-
-  // TODO: Write function to load and unload new Views.
-  const view = new View({
-    environmentModel: assetCache.gltf.terrain.scene,
-    playerModel: assetCache.gltf.player.scene,
-    camera: viewApplication.camera,
-    userInput,
-    physicsEventQueue: eventQueue,
-    physicsWorld: world,
-    onReachedGoal: () => {
-      gameState.setGameScene("level-complete");
-    },
-  });
-
-  gameState.setGameScene("title");
-  viewApplication.scene = view;
-  viewApplication.addToTicker(view.update);
-  viewApplication.start();
 
   if (config.physicsDebugRender) {
     const { PhysicsDebugger } = await import("./view");
@@ -126,7 +154,7 @@ const startApp = async (): Promise<void> => {
 
     view.add(physicsDebugRender);
 
-    viewApplication.addToTicker(() => {
+    ticker.add(() => {
       physicsDebugRender.update(world);
     });
   }
