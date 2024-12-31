@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { GameLevelName } from "../game-state.svelte";
-  import { GameOverlay, LevelSelect, LoadingScreen, TitleScreen } from "./svelte-components";
+  import { GameOverlay, LevelComplete, LevelSelect, LoadingScreen, TitleScreen } from "./svelte-components";
 
   import { gameState } from "../game-state.svelte";
 
@@ -10,20 +10,21 @@
   const showTitle = $derived(state.currentScene === "title");
   const showLoadingScreen = $derived(state.currentScene === "loading");
   const showLevelSelect = $derived(state.currentScene === "level-select");
+  const showLevelComplete = $derived(state.currentScene === "level-complete");
 </script>
 
 <div>
   {#if showOverlay}
     <GameOverlay>
       {#if showLoadingScreen}
-        <LoadingScreen loadingPercentage={state.loadingPercent}></LoadingScreen>
+        <LoadingScreen loadingPercentage={state.loadingPercent} />
       {/if}
       {#if showTitle}
         <TitleScreen
           onClicked={() => {
             gameState.setGameScene("level-select");
           }}
-        ></TitleScreen>
+        />
       {/if}
       {#if showLevelSelect}
         <LevelSelect
@@ -35,7 +36,16 @@
           onConfirmed={() => {
             gameState.setGameScene("game");
           }}
-        ></LevelSelect>
+        />
+      {/if}
+
+      {#if showLevelComplete}
+        <LevelComplete
+          timeMs={100}
+          onClicked={() => {
+            gameState.setGameScene("game");
+          }}
+        />
       {/if}
     </GameOverlay>
   {/if}

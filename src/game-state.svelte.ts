@@ -1,5 +1,5 @@
 export type GameLevelName = "tutorial" | "level-01" | "level-02";
-export type GameSceneName = "game" | "level-select" | "loading" | "title";
+export type GameSceneName = "game" | "level-select" | "loading" | "title" | "level-complete";
 export type GameLevel = { name: GameLevelName; unlocked: boolean };
 export type GameState = {
   loadingPercent: number;

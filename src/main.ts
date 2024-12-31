@@ -101,6 +101,7 @@ const startApp = async (): Promise<void> => {
 
   const { world, eventQueue } = await createPhysicsWorld();
 
+  // TODO: Write function to load and unload new Views.
   const view = new View({
     environmentModel: assetCache.gltf.terrain.scene,
     playerModel: assetCache.gltf.player.scene,
@@ -109,7 +110,7 @@ const startApp = async (): Promise<void> => {
     physicsEventQueue: eventQueue,
     physicsWorld: world,
     onReachedGoal: () => {
-      console.log("reached goal 🤩");
+      gameState.setGameScene("level-complete");
     },
   });
 
