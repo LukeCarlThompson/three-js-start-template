@@ -6,9 +6,11 @@
 
   export type AppProps = {
     onStartLevelClicked?: () => void;
+    onLevelCompleteClicked?: () => void;
+    onTitleScreenClicked?: () => void;
   };
 
-  let { onStartLevelClicked }: AppProps = $props();
+  let { onStartLevelClicked, onLevelCompleteClicked, onTitleScreenClicked }: AppProps = $props();
 
   const showOverlay = $derived(gameState.currentScene !== "game");
   const showTitle = $derived(gameState.currentScene === "title");
@@ -26,7 +28,7 @@
       {#if showTitle}
         <TitleScreen
           onClicked={() => {
-            gameState.currentScene = "level-select";
+            onTitleScreenClicked?.();
           }}
         />
       {/if}
@@ -47,7 +49,7 @@
         <LevelComplete
           timeMs={100}
           onClicked={() => {
-            gameState.currentScene = "level-select";
+            onLevelCompleteClicked?.();
           }}
         />
       {/if}
