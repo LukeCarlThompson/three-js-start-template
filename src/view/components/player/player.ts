@@ -30,7 +30,7 @@ export class Player extends Group {
     jumpForce: 60 * 1,
     wallJumpForce: 40 * 1,
     wallJumpHorizontalForce: 40 * 1,
-    boostForce: 15000 * 1,
+    boostForce: 130,
     boostMax: 10000,
     boostUsageRate: 5000,
     boostRegenerationRate: 15000,
@@ -108,7 +108,7 @@ export class Player extends Group {
 
   public readonly boost = (delta: number): void => {
     if (this.#state.boostRemaining === 0) return;
-    this.impulse.y += this.#config.boostForce * delta;
+    this.impulse.y += this.#config.boostForce;
     this.#state.boostRemaining = Math.max(this.#state.boostRemaining - this.#config.boostUsageRate * delta, 0);
     this.#state.isBoosting = true;
   };
