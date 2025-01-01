@@ -116,7 +116,7 @@ export class Application {
     // TODO: dispose of the previous level and assets
 
     this.#currentLevel = new GameLevel({
-      environmentModel: assetCache.gltf.levelOne.scene,
+      environmentModel: assetCache.gltf[levelName].scene,
       player: this.#player,
       camera: this.#camera,
       physicsEventQueue: this.#eventQueue,

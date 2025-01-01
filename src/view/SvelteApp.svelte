@@ -1,8 +1,14 @@
 <script lang="ts">
-  import type { GameLevelName } from "../game-state.svelte";
   import { GameOverlay, LevelComplete, LevelSelect, LoadingScreen, TitleScreen } from "./svelte-components";
 
+  import type { GameLevelName } from "../game-state.svelte";
   import { gameState } from "../game-state.svelte";
+
+  export type AppProps = {
+    onStartLevelClicked?: () => void;
+  };
+
+  let { onStartLevelClicked }: AppProps = $props();
 
   const showOverlay = $derived(gameState.currentScene !== "game");
   const showTitle = $derived(gameState.currentScene === "title");
@@ -32,7 +38,7 @@
             gameState.selectedLevel = selectedLevel as GameLevelName;
           }}
           onConfirmed={() => {
-            gameState.currentScene = "game";
+            onStartLevelClicked?.();
           }}
         />
       {/if}

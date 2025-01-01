@@ -19,6 +19,6 @@ export const gameState: GameState = $state({
   levels: [
     { name: "tutorial", unlocked: true, completed: false, bestTime: undefined },
     { name: "level-01", unlocked: true, completed: false, bestTime: undefined },
-    { name: "level-02", unlocked: false, completed: false, bestTime: undefined },
+    { name: "level-02", unlocked: true, completed: false, bestTime: undefined },
   ],
 });

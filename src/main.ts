@@ -14,7 +14,21 @@ const startApp = async (): Promise<void> => {
   const config = getConfig();
 
   // TODO: Load the loading screen before the other components
-  createSvelteApp(appElement);
+  createSvelteApp(appElement, () => {
+    const changeLevel = async () => {
+      gameState.currentScene = "loading";
+      await application.switchLevel({
+        levelName: gameState.selectedLevel,
+        onLoadingProgressChanged: (progress) => {
+          gameState.loadingPercent = progress;
+        },
+      });
+
+      gameState.currentScene = "game";
+    };
+
+    void changeLevel();
+  });
 
   gameState.loadingPercent = 3;
   const { createApplication } = await import("./application");

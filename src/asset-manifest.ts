@@ -2,6 +2,7 @@ import type { GameLevelName } from "./game-state.svelte";
 import levelOneUrl from "./assets/level_one.glb?url";
 import levelTwoUrl from "./assets/level_two.glb?url";
 import playerUrl from "./assets/player.glb?url";
+import tutorialUrl from "./assets/tutorial.glb?url";
 
 export const commonAssetManifest = {
   texture: [],
@@ -12,19 +13,19 @@ export const commonAssetManifest = {
 export const tutorialAssetManifest = {
   texture: [],
   audio: [],
-  gltf: [],
+  gltf: [{ name: "tutorial", url: tutorialUrl }],
 } as const;
 
 export const levelOneAssetManifest = {
   texture: [],
   audio: [],
-  gltf: [{ name: "levelOne", url: levelOneUrl }],
+  gltf: [{ name: "level-01", url: levelOneUrl }],
 } as const;
 
 export const levelTwoAssetManifest = {
   texture: [],
   audio: [],
-  gltf: [{ name: "levelTwo", url: levelTwoUrl }],
+  gltf: [{ name: "level-02", url: levelTwoUrl }],
 } as const;
 
 export type AssetManifest =

@@ -154,7 +154,6 @@ export class GameLevel extends Scene {
     if (!this.#spotLight) return;
     const multiplier = (quality * 0.9 + 10) * 0.01;
     const shadowMapDimension = Math.round(2048 * multiplier);
-    console.log(multiplier);
     this.#spotLight.shadow.mapSize.set(shadowMapDimension, shadowMapDimension);
     this.#spotLight.shadow.map?.setSize(shadowMapDimension, shadowMapDimension);
   };
@@ -174,6 +173,10 @@ export class GameLevel extends Scene {
     }
   };
 
+  public readonly reset = (): void => {
+    this.#player.rigidBody.setTranslation({ x: 0, y: 0, z: 0 }, true);
+  };
+
   public update = (delta: number): void => {
     if (this.playerMovement.right) {
       this.#player.moveRight();
@@ -185,7 +188,6 @@ export class GameLevel extends Scene {
       this.#player.boost(delta);
     }
 
-    // TODO: Set some bounds based on screen size
     const dampXMultiplier =
       Math.abs(this.#camera.position.x - this.#player.position.x) *
       Math.abs(this.#camera.position.x - this.#player.position.x);

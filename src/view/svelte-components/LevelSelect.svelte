@@ -1,15 +1,17 @@
 <script module lang="ts">
-  export type LevelSelectProps = {
-    levels: { name: string; unlocked: boolean }[];
-    selectedLevelName: string;
-    onConfirmed?: (selectedId: string) => void;
-    onSelectionClicked?: (selectedId: string) => void;
+  export type LevelSelectProps<T> = {
+    levels: { name: T; unlocked: boolean }[];
+    selectedLevelName: T;
+    onConfirmed?: (selectedGameLevelName: T) => void;
+    onSelectionClicked?: (selectedGameLevelName: T) => void;
   };
+
+  export type T = string;
 </script>
 
-<script lang="ts">
+<script lang="ts" generics="T extends string">
   import { fade } from "svelte/transition";
-  let { levels, selectedLevelName, onConfirmed, onSelectionClicked }: LevelSelectProps = $props();
+  let { levels, selectedLevelName, onConfirmed, onSelectionClicked }: LevelSelectProps<T> = $props();
 </script>
 
 <div class={"level-select"} transition:fade>
