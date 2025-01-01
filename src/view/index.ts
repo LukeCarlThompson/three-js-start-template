@@ -1,9 +1,6 @@
-export { createRenderer } from "./create-renderer";
+export { Player } from "./components";
+export type { PlayerProps } from "./components";
 export { createSvelteApp } from "./create-svelte-app";
+export { GameLevel } from "./game-level";
+export type { GameLevelProps } from "./game-level";
 export { createPhysicsWorld, PhysicsDebugger } from "./physics";
-export { RenderResolutionController } from "./render-resolution-controller";
-export type { RenderResolutionControllerProps } from "./render-resolution-controller";
-export { Ticker } from "./ticker";
-export type { UpdateFunction } from "./ticker";
-export { UserInput } from "./user-input";
-export { View } from "./view";

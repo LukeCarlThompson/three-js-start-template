@@ -2,6 +2,7 @@ export type Config = {
   stats: boolean;
   debugControls: boolean;
   physicsDebugRender: boolean;
+  webGPUEnabled: boolean;
 };
 
 export const getConfig = (): Config => {
@@ -10,6 +11,7 @@ export const getConfig = (): Config => {
       stats: true,
       debugControls: true,
       physicsDebugRender: true,
+      webGPUEnabled: false,
     };
   }
 
@@ -17,5 +19,6 @@ export const getConfig = (): Config => {
     stats: false,
     debugControls: false,
     physicsDebugRender: false,
+    webGPUEnabled: false,
   };
 };

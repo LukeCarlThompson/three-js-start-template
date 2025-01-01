@@ -14,10 +14,10 @@ const checkForWebGPUSupport = async (): Promise<boolean> => {
   return isAvailable;
 };
 
-export const createRenderer = async (): Promise<WebGLRenderer | WebGPURenderer> => {
+export const createRenderer = async (webGPUEnabled: boolean): Promise<WebGLRenderer | WebGPURenderer> => {
   const webGPUSupported = await checkForWebGPUSupport();
 
-  if (webGPUSupported) {
+  if (webGPUEnabled && webGPUSupported) {
     const { WebGPURenderer } = await import("three/webgpu");
     const renderer = new WebGPURenderer({
       powerPreference: "high-performance",

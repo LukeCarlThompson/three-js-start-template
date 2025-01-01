@@ -2,30 +2,31 @@ import * as BufferGeometryUtils from "three/addons/utils/BufferGeometryUtils.js"
 
 import { ActiveEvents, ColliderDesc } from "@dimforge/rapier3d-compat";
 import { BatchedMesh, Fog, HemisphereLight, Mesh, MeshLambertMaterial, PointLight, Scene, SpotLight } from "three";
-import type { BufferGeometry, Light, Material, Object3D, PerspectiveCamera } from "three";
+import type { BufferGeometry, Material, Object3D, PerspectiveCamera } from "three";
 import type { Collider, EventQueue, World } from "@dimforge/rapier3d-compat";
-import { ExampleComponent, Player } from "./components";
 
-import type { UserInput } from "./user-input";
+import { ExampleComponent } from "./components";
+import type { Player } from "./components";
 import { damp } from "three/src/math/MathUtils.js";
 
-export type ViewProps = {
+export type GameLevelProps = {
   environmentModel: Object3D;
-  playerModel: Object3D;
+  player: Player;
   camera: PerspectiveCamera;
-  userInput: UserInput;
   physicsWorld: World;
   physicsEventQueue: EventQueue;
   onReachedGoal: () => void;
 };
 
-// TODO: Separate this into a game level component and a game logic component
-
-export class View extends Scene {
+export class GameLevel extends Scene {
+  public readonly playerMovement = {
+    up: false,
+    right: false,
+    left: false,
+  };
+  #camera: PerspectiveCamera;
   #exampleComponent: ExampleComponent;
   #player: Player;
-  #camera: PerspectiveCamera;
-  #userInput: UserInput;
   #physicsWorld: World;
   #eventQueue: EventQueue;
   #config: {
@@ -35,18 +36,17 @@ export class View extends Scene {
   };
   #terrainColliders: Collider[] = [];
   #goalSensor?: Collider = undefined;
-  #spotLight?: Light;
+  #spotLight?: SpotLight | PointLight;
   #onReachedGoal: () => void;
 
   public constructor({
     environmentModel,
-    playerModel,
+    player,
     camera,
-    userInput,
     physicsWorld,
     physicsEventQueue,
     onReachedGoal,
-  }: ViewProps) {
+  }: GameLevelProps) {
     super();
     const cameraFollowDistance = 80;
     this.#config = {
@@ -57,7 +57,6 @@ export class View extends Scene {
 
     this.#onReachedGoal = onReachedGoal;
 
-    this.#userInput = userInput;
     this.#physicsWorld = physicsWorld;
     this.#eventQueue = physicsEventQueue;
     this.fog = new Fog(0x456475, this.#config.cameraFollowDistance * 0.9, this.#config.renderDistance);
@@ -66,13 +65,11 @@ export class View extends Scene {
     this.#camera = camera;
     this.#camera.far = this.#config.renderDistance;
     this.#camera.fov = 10;
-    this.#camera.updateProjectionMatrix();
     this.#camera.position.set(0, 3, this.#config.cameraFollowDistance);
     this.#exampleComponent = new ExampleComponent({ dimensions: { x: 1, y: 1, z: 1 } });
     this.#exampleComponent.position.y = 8;
 
-    this.#player = new Player({ model: playerModel, physicsWorld, position: { x: 0, y: 3, z: 0 } });
-    this.#player.position.set(0, 5, 0);
+    this.#player = player;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const objectsToAddToBatchedMesh: Mesh<any, any, any>[] = [];
@@ -120,17 +117,14 @@ export class View extends Scene {
 
       if (child instanceof PointLight || child instanceof SpotLight) {
         child.castShadow = true;
-        // TODO: link this setting to the quality slider in screen resolution
-        const shadowMapSizeMultiplier = 3;
-        child.shadow.mapSize.width = 512 * shadowMapSizeMultiplier;
-        child.shadow.mapSize.height = 512 * shadowMapSizeMultiplier;
         child.shadow.camera.near = 10;
         child.shadow.camera.far = child.position.distanceTo(this.#player.position) + 10;
         child.shadow.radius = 2;
         child.shadow.blurSamples = 5;
         child.shadow.bias = -0.005;
+        child.lookAt(this.#player.position);
         this.#spotLight = child;
-        objectsToAddToToScene.push(child);
+        objectsToAddToToScene.push(this.#spotLight);
       }
     });
 
@@ -147,21 +141,6 @@ export class View extends Scene {
       batchedMesh.setMatrixAt(instancedId, object.matrix);
     });
 
-    userInput.addEventListener("jump-pressed", () => {
-      let canJump = false;
-
-      this.#terrainColliders.forEach((terrainCollider) => {
-        this.#physicsWorld.contactPair(this.#player.collider, terrainCollider, () => {
-          canJump = true;
-        });
-      });
-
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (canJump) {
-        this.#player.jump();
-      }
-    });
-
     this.add(
       this.#exampleComponent,
       batchedMesh,
@@ -171,14 +150,38 @@ export class View extends Scene {
     );
   }
 
+  public readonly setShadowMapQuality = (quality: number): void => {
+    if (!this.#spotLight) return;
+    const multiplier = (quality * 0.9 + 10) * 0.01;
+    const shadowMapDimension = Math.round(2048 * multiplier);
+    console.log(multiplier);
+    this.#spotLight.shadow.mapSize.set(shadowMapDimension, shadowMapDimension);
+    this.#spotLight.shadow.map?.setSize(shadowMapDimension, shadowMapDimension);
+  };
+
+  public readonly jumpPressed = (): void => {
+    let canJump = false;
+
+    this.#terrainColliders.forEach((terrainCollider) => {
+      this.#physicsWorld.contactPair(this.#player.collider, terrainCollider, () => {
+        canJump = true;
+      });
+    });
+
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (canJump) {
+      this.#player.jump();
+    }
+  };
+
   public update = (delta: number): void => {
-    if (this.#userInput.state.right) {
+    if (this.playerMovement.right) {
       this.#player.moveRight();
     }
-    if (this.#userInput.state.left) {
+    if (this.playerMovement.left) {
       this.#player.moveLeft();
     }
-    if (this.#userInput.state.up) {
+    if (this.playerMovement.up) {
       this.#player.boost(delta);
     }
 
@@ -212,7 +215,6 @@ export class View extends Scene {
       }
     });
 
-    this.#spotLight?.lookAt(this.#player.position);
     if (this.#spotLight) {
       this.#spotLight.position.x = this.#player.position.x;
       this.#spotLight.position.y = this.#player.position.y + 10;

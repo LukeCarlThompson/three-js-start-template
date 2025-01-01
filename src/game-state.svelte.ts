@@ -1,13 +1,13 @@
 export type GameLevelName = "tutorial" | "level-01" | "level-02";
 export type GameSceneName = "game" | "level-select" | "loading" | "title" | "level-complete";
-export type GameLevel = { name: GameLevelName; unlocked: boolean; completed: boolean; bestTime?: number };
+export type GameLevelEntry = { name: GameLevelName; unlocked: boolean; completed: boolean; bestTime?: number };
 export type GameState = {
   renderQuality: number;
   loadingPercent: number;
   currentScene: GameSceneName;
   levelTimerMs: number;
   selectedLevel: GameLevelName;
-  levels: GameLevel[];
+  levels: GameLevelEntry[];
 };
 
 export const gameState: GameState = $state({

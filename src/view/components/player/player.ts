@@ -8,7 +8,6 @@ import type { Object3D } from "three";
 export type PlayerProps = {
   physicsWorld: World;
   model: Object3D;
-  position: { x: number; y: number; z: number };
 };
 
 export class Player extends Group {
@@ -45,12 +44,10 @@ export class Player extends Group {
     isBoosting: false,
   };
 
-  public constructor({ physicsWorld, model, position }: PlayerProps) {
+  public constructor({ physicsWorld, model }: PlayerProps) {
     super();
 
     this.#physicsWorld = physicsWorld;
-
-    this.position.set(position.x, position.y, position.z);
 
     this.#rayRight = new Ray(this.position, { x: 1, y: 0, z: 0 });
     this.#rayLeft = new Ray(this.position, { x: -1, y: 0, z: 0 });

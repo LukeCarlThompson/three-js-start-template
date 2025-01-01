@@ -7,22 +7,39 @@ import { ExampleComponent } from "./example-component";
 const meta = {
   title: "Example/Example Component",
   render: ({ dimensions }) => {
-    const exampleComponent = new ExampleComponent({ dimensions });
+    const div = document.createElement("div");
 
-    const { storyElement, viewApplication, tweakpane } = createStoryTemplate();
+    const asyncLoading = async () => {
+      const exampleComponent = new ExampleComponent({ dimensions });
 
-    tweakpane.addFolder({
-      title: "Folder",
-    });
+      const { storyElement, ticker, camera, renderer, tweakpane } = await createStoryTemplate();
 
-    const scene = new Scene();
+      div.appendChild(storyElement);
 
-    viewApplication.scene = scene;
-    scene.add(exampleComponent);
-    viewApplication.addToTicker(exampleComponent.update);
-    viewApplication.camera.position.z = 5;
+      tweakpane.addFolder({
+        title: "Folder",
+      });
 
-    return storyElement;
+      camera.position.z = 5;
+      const scene = new Scene();
+      scene.add(exampleComponent);
+
+      ticker.add(exampleComponent.update);
+      ticker.add(() => {
+        if ("renderAsync" in renderer) {
+          void renderer.renderAsync(scene, camera);
+        } else {
+          renderer.render(scene, camera);
+        }
+      });
+      ticker.start();
+
+      window.dispatchEvent(new Event("resize"));
+    };
+
+    void asyncLoading();
+
+    return div;
   },
   parameters: {
     // More on how to position stories at: https://storybook.js.org/docs/configure/story-layout

@@ -1,4 +1,6 @@
-import { OrthographicCamera, PerspectiveCamera, type WebGLRenderer } from "three";
+import { OrthographicCamera, PerspectiveCamera } from "three";
+
+import type { WebGLRenderer } from "three";
 import type { WebGPURenderer } from "three/webgpu";
 
 export type RenderResolutionControllerProps = {

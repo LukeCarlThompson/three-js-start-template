@@ -1,13 +1,21 @@
 import { Pane } from "tweakpane";
+import { PerspectiveCamera } from "three";
+import { RenderResolutionController } from "../../../application/render-resolution-controller";
 import Stats from "stats-gl";
-import type { ViewApplication } from "../../view-application";
-import { createViewApplication } from "../../create-view-application";
+import { Ticker } from "../../../application/ticker";
+import type { WebGLRenderer } from "three";
+import type { WebGPURenderer } from "three/webgpu";
+import { createRenderer } from "../../../application/create-renderer";
 
-export const createStoryTemplate = (): {
+export const createStoryTemplate = async (
+  webGPUEnabled?: boolean
+): Promise<{
   storyElement: HTMLElement;
-  viewApplication: ViewApplication;
+  ticker: Ticker;
+  camera: PerspectiveCamera;
+  renderer: WebGLRenderer | WebGPURenderer;
   tweakpane: Pane;
-} => {
+}> => {
   const storyElement = document.createElement("div");
   storyElement.style.position = "absolute";
   storyElement.style.top = "0";
@@ -15,29 +23,47 @@ export const createStoryTemplate = (): {
   storyElement.style.width = "100%";
   storyElement.style.height = "100%";
 
+  const { clientWidth, clientHeight } = storyElement;
+
   const stats = new Stats({
     trackGPU: true,
     trackHz: false,
     trackCPT: false,
   });
 
-  const viewApplication = createViewApplication(
-    storyElement,
-    () => {
-      stats.begin();
-    },
-    () => {
-      stats.end();
-      stats.update();
-    }
-  );
+  const renderer = await createRenderer(webGPUEnabled || false);
+  storyElement.appendChild(renderer.domElement);
 
-  void stats.init(viewApplication.renderer);
+  const camera = new PerspectiveCamera(45, clientWidth / clientHeight, 0.1, 1000);
 
-  viewApplication.start();
+  const ticker = new Ticker();
+
+  ticker.beforeTick = () => {
+    stats.begin();
+  };
+
+  ticker.afterTick = () => {
+    stats.end();
+    stats.update();
+  };
+
+  const renderResolutionController = new RenderResolutionController({
+    maxPixels: 1920 * 1080,
+    minPixels: 400 * 600,
+    quality: 100,
+    size: { width: clientWidth, height: clientHeight },
+  });
+
+  const handleResize = () => {
+    const { clientWidth, clientHeight } = storyElement;
+    renderResolutionController.size.width = clientWidth;
+    renderResolutionController.size.height = clientHeight;
+    renderResolutionController.applyTo(renderer, camera);
+  };
+  window.addEventListener("resize", handleResize);
+  handleResize();
 
   const tweakpane = new Pane();
-
   tweakpane.element.style.position = "absolute";
   tweakpane.element.style.top = "10px";
   tweakpane.element.style.right = "10px";
@@ -62,8 +88,15 @@ export const createStoryTemplate = (): {
       max: 100,
     })
     .on("change", () => {
-      viewApplication.setRenderQualityPercentage(quality.percentage);
+      renderResolutionController.quality = quality.percentage;
+      renderResolutionController.applyTo(renderer, camera);
     });
 
-  return { storyElement, viewApplication, tweakpane };
+  return {
+    storyElement,
+    ticker,
+    camera,
+    renderer,
+    tweakpane,
+  };
 };
