@@ -1,7 +1,17 @@
 import * as BufferGeometryUtils from "three/addons/utils/BufferGeometryUtils.js";
 
 import { ActiveEvents, ColliderDesc } from "@dimforge/rapier3d-compat";
-import { BatchedMesh, Fog, HemisphereLight, Mesh, MeshLambertMaterial, PointLight, Scene, SpotLight } from "three";
+import {
+  BatchedMesh,
+  Color,
+  Fog,
+  HemisphereLight,
+  Mesh,
+  MeshLambertMaterial,
+  PointLight,
+  Scene,
+  SpotLight,
+} from "three";
 import type { BufferGeometry, Material, Object3D, PerspectiveCamera } from "three";
 import type { Collider, EventQueue, World } from "@dimforge/rapier3d-compat";
 
@@ -79,6 +89,16 @@ export class GameLevel extends Scene {
     });
 
     environmentModel.traverse((child) => {
+      if (child.name.includes("user-data")) {
+        if ("backgroundColour" in child.userData && typeof child.userData.backgroundColour === "string") {
+          const { backgroundColour } = child.userData;
+          const colour = new Color(backgroundColour);
+          this.fog?.color.set(colour);
+          this.background = colour;
+        }
+        return;
+      }
+
       if (child instanceof Mesh) {
         child.castShadow = true;
         child.receiveShadow = true;
