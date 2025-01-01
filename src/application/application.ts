@@ -126,6 +126,8 @@ export class Application {
       },
     });
 
+    this.#currentLevel.reset();
+
     this.#currentLevel.setShadowMapQuality(this.#gameState.renderQuality);
 
     if (this.#physicsDebugger) {

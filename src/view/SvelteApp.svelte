@@ -47,7 +47,7 @@
         <LevelComplete
           timeMs={100}
           onClicked={() => {
-            gameState.currentScene = "game";
+            gameState.currentScene = "level-select";
           }}
         />
       {/if}
