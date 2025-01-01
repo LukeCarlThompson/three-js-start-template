@@ -38,7 +38,7 @@ const startApp = async (): Promise<void> => {
     },
   });
 
-  const renderer = createRenderer();
+  const renderer = await createRenderer();
   appElement.appendChild(renderer.domElement);
 
   const renderResolutionController = new RenderResolutionController({
@@ -89,7 +89,11 @@ const startApp = async (): Promise<void> => {
   ticker.add(view.update);
   ticker.start();
   ticker.add(() => {
-    renderer.render(view, camera);
+    if ("renderAsync" in renderer) {
+      void renderer.renderAsync(view, camera);
+    } else {
+      renderer.render(view, camera);
+    }
   });
 
   const handleResize = () => {

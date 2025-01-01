@@ -120,13 +120,15 @@ export class View extends Scene {
 
       if (child instanceof PointLight || child instanceof SpotLight) {
         child.castShadow = true;
-        const shadowMapSizeMultiplier = 2;
+        // TODO: link this setting to the quality slider in screen resolution
+        const shadowMapSizeMultiplier = 3;
         child.shadow.mapSize.width = 512 * shadowMapSizeMultiplier;
         child.shadow.mapSize.height = 512 * shadowMapSizeMultiplier;
         child.shadow.camera.near = 10;
-        child.shadow.camera.far = 100;
-        child.shadow.radius = 4;
-        child.shadow.blurSamples = 6;
+        child.shadow.camera.far = child.position.distanceTo(this.#player.position) + 10;
+        child.shadow.radius = 2;
+        child.shadow.blurSamples = 5;
+        child.shadow.bias = -0.005;
         this.#spotLight = child;
         objectsToAddToToScene.push(child);
       }
@@ -136,6 +138,8 @@ export class View extends Scene {
 
     batchedMesh.castShadow = true;
     batchedMesh.receiveShadow = true;
+    // batchedMesh.perObjectFrustumCulled = false;
+    // batchedMesh.sortObjects = false;
 
     objectsToAddToBatchedMesh.forEach((object) => {
       const geometryId = batchedMesh.addGeometry(object.geometry as BufferGeometry);

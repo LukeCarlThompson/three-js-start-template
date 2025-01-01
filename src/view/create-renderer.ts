@@ -1,15 +1,43 @@
-import { ACESFilmicToneMapping, VSMShadowMap, WebGLRenderer } from "three";
+import { ACESFilmicToneMapping } from "three";
+import WebGL from "three/addons/capabilities/WebGL.js";
+import type { WebGLRenderer } from "three";
+import type { WebGPURenderer } from "three/webgpu";
 
-// TODO: make this work with web gou renderer if supported
+const checkForWebGPUSupport = async (): Promise<boolean> => {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  let isAvailable = typeof navigator !== "undefined" && navigator.gpu !== undefined;
 
-export const createRenderer = (): WebGLRenderer => {
-  const renderer = new WebGLRenderer({
-    powerPreference: "high-performance",
-    antialias: true,
-  });
-  renderer.toneMapping = ACESFilmicToneMapping;
-  renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = VSMShadowMap;
+  if (typeof window !== "undefined" && isAvailable) {
+    isAvailable = (await navigator.gpu.requestAdapter()) !== null;
+  }
 
-  return renderer;
+  return isAvailable;
+};
+
+export const createRenderer = async (): Promise<WebGLRenderer | WebGPURenderer> => {
+  const webGPUSupported = await checkForWebGPUSupport();
+
+  if (webGPUSupported) {
+    const { WebGPURenderer } = await import("three/webgpu");
+    const renderer = new WebGPURenderer({
+      powerPreference: "high-performance",
+      antialias: true,
+    });
+    renderer.toneMapping = ACESFilmicToneMapping;
+    renderer.shadowMap.enabled = true;
+
+    return renderer;
+  } else if (WebGL.isWebGL2Available()) {
+    const { WebGLRenderer } = await import("three");
+    const renderer = new WebGLRenderer({
+      powerPreference: "high-performance",
+      antialias: true,
+    });
+    renderer.toneMapping = ACESFilmicToneMapping;
+    renderer.shadowMap.enabled = true;
+
+    return renderer;
+  }
+
+  throw new Error("Your browser does not support WebGL or WebGPU");
 };
