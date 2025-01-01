@@ -35,7 +35,7 @@ export class RenderResolutionController {
     return this.#resolution;
   }
 
-  public readonly applySizeAndQuality = (
+  public readonly applyTo = (
     renderer: WebGLRenderer | WebGPURenderer,
     camera: PerspectiveCamera | OrthographicCamera
   ): void => {

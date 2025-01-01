@@ -96,7 +96,7 @@ const startApp = async (): Promise<void> => {
     const { clientWidth, clientHeight } = appElement;
     renderResolutionController.size.width = clientWidth;
     renderResolutionController.size.height = clientHeight;
-    renderResolutionController.applySizeAndQuality(renderer, camera);
+    renderResolutionController.applyTo(renderer, camera);
   };
   window.addEventListener("resize", handleResize);
   handleResize();
@@ -137,7 +137,7 @@ const startApp = async (): Promise<void> => {
       })
       .on("change", () => {
         renderResolutionController.quality = gameState.renderQuality;
-        renderResolutionController.applySizeAndQuality(renderer, camera);
+        renderResolutionController.applyTo(renderer, camera);
       });
   }
 
