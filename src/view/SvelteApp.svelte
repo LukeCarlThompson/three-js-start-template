@@ -4,37 +4,35 @@
 
   import { gameState } from "../game-state.svelte";
 
-  const { state } = gameState;
-
-  const showOverlay = $derived(state.currentScene !== "game");
-  const showTitle = $derived(state.currentScene === "title");
-  const showLoadingScreen = $derived(state.currentScene === "loading");
-  const showLevelSelect = $derived(state.currentScene === "level-select");
-  const showLevelComplete = $derived(state.currentScene === "level-complete");
+  const showOverlay = $derived(gameState.currentScene !== "game");
+  const showTitle = $derived(gameState.currentScene === "title");
+  const showLoadingScreen = $derived(gameState.currentScene === "loading");
+  const showLevelSelect = $derived(gameState.currentScene === "level-select");
+  const showLevelComplete = $derived(gameState.currentScene === "level-complete");
 </script>
 
 <div>
   {#if showOverlay}
     <GameOverlay>
       {#if showLoadingScreen}
-        <LoadingScreen loadingPercentage={state.loadingPercent} />
+        <LoadingScreen loadingPercentage={gameState.loadingPercent} />
       {/if}
       {#if showTitle}
         <TitleScreen
           onClicked={() => {
-            gameState.setGameScene("level-select");
+            gameState.currentScene = "level-select";
           }}
         />
       {/if}
       {#if showLevelSelect}
         <LevelSelect
-          levels={state.levels}
-          selectedLevelName={state.selectedLevel}
+          levels={gameState.levels}
+          selectedLevelName={gameState.selectedLevel}
           onSelectionClicked={(selectedLevel) => {
-            gameState.setSelectedLevel(selectedLevel as GameLevelName);
+            gameState.selectedLevel = selectedLevel as GameLevelName;
           }}
           onConfirmed={() => {
-            gameState.setGameScene("game");
+            gameState.currentScene = "game";
           }}
         />
       {/if}
@@ -43,7 +41,7 @@
         <LevelComplete
           timeMs={100}
           onClicked={() => {
-            gameState.setGameScene("game");
+            gameState.currentScene = "game";
           }}
         />
       {/if}

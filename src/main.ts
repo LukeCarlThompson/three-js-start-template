@@ -12,30 +12,29 @@ const startApp = async (): Promise<void> => {
     throw new Error("Unable to find app element");
   }
 
+  // TODO: Load the loading screen before the other components
   createSvelteApp(appElement);
   const { clientWidth, clientHeight } = appElement;
   const config = getConfig();
 
   const { gameState } = await import("./game-state.svelte.ts");
-  gameState.setLoadingPercent(1);
+  gameState.loadingPercent = 1;
   const { AssetLoader } = await import("./asset-loader");
-  gameState.setLoadingPercent(5);
+  gameState.loadingPercent = 5;
   const { UserInput, View, createPhysicsWorld, createRenderer, Ticker, RenderResolutionController } = await import(
     "./view"
   );
   const { PerspectiveCamera } = await import("three");
-  gameState.setLoadingPercent(10);
-
+  gameState.loadingPercent = 10;
   const assetLoader = new AssetLoader();
-
-  gameState.setLoadingPercent(12);
+  gameState.loadingPercent = 12;
 
   // The asset manifest should be broken up into ones specific for each view and ones that are used in all views.
   const assetCache = await assetLoader.loadAssetManifest({
     assetManifest,
     onProgress: (percentage) => {
       const modifiedPercentage = ((12 + percentage) / 112) * 100;
-      gameState.setLoadingPercent(modifiedPercentage);
+      gameState.loadingPercent = modifiedPercentage;
     },
   });
 
@@ -45,7 +44,7 @@ const startApp = async (): Promise<void> => {
   const renderResolutionController = new RenderResolutionController({
     maxPixels: 1920 * 1080,
     minPixels: 400 * 600,
-    quality: gameState.state.renderQuality,
+    quality: gameState.renderQuality,
     size: { width: clientWidth, height: clientHeight },
   });
 
@@ -70,11 +69,11 @@ const startApp = async (): Promise<void> => {
     physicsEventQueue: eventQueue,
     physicsWorld: world,
     onReachedGoal: () => {
-      gameState.setGameScene("level-complete");
+      gameState.currentScene = "level-complete";
     },
   });
 
-  gameState.setGameScene("title");
+  gameState.currentScene = "title";
 
   let stats: Stats | undefined;
   const ticker = new Ticker({
@@ -131,18 +130,13 @@ const startApp = async (): Promise<void> => {
       title: "Resolution",
     });
 
-    const quality = {
-      percentage: 100,
-    };
-
     resolutionFolder
-      .addBinding(quality, "percentage", {
+      .addBinding(gameState, "renderQuality", {
         min: 0,
         max: 100,
       })
       .on("change", () => {
-        gameState.state.renderQuality = quality.percentage;
-        renderResolutionController.quality = gameState.state.renderQuality;
+        renderResolutionController.quality = gameState.renderQuality;
         renderResolutionController.applySizeAndQuality(renderer, camera);
       });
   }
