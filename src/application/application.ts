@@ -126,6 +126,8 @@ export class Application {
       },
     });
 
+    this.handleResize();
+
     this.#currentLevel.reset();
 
     this.#currentLevel.setShadowMapQuality(this.#gameState.renderQuality);

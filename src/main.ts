@@ -44,13 +44,6 @@ const startApp = async (): Promise<void> => {
   const { createApplication } = await import("./application");
   const application = await createApplication(appElement);
 
-  await application.switchLevel({
-    levelName: "level-01",
-    onLoadingProgressChanged: (progress) => {
-      gameState.loadingPercent = progress;
-    },
-  });
-
   window.addEventListener("resize", application.handleResize);
   application.handleResize();
 
