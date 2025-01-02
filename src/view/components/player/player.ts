@@ -25,10 +25,10 @@ export class Player extends Group {
     playerMass: 5,
     playerFriction: 0.25,
     playerVelocityLimit: 10,
-    horizontalMovementForce: 100 * 1,
-    jumpForce: 60 * 1,
-    wallJumpForce: 40 * 1,
-    wallJumpHorizontalForce: 40 * 1,
+    horizontalMovementForce: 100,
+    jumpForce: 40,
+    wallJumpForce: 40,
+    wallJumpHorizontalForce: 40,
     boostForce: 130,
     boostMax: 10000,
     boostUsageRate: 5000,
@@ -188,6 +188,10 @@ export class Player extends Group {
         this.#state.boostRemaining + this.#config.boostRegenerationRate * delta,
         this.#config.boostMax
       );
+    } else if (this.hitLeft() || this.hitRight()) {
+      this.rigidBody.setGravityScale(0.1, true);
+    } else {
+      this.rigidBody.setGravityScale(1, true);
     }
 
     const rotation = this.#state.direction === "left" ? -90 : 90;
