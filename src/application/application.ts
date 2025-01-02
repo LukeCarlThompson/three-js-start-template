@@ -92,11 +92,15 @@ export class Application {
     }
   }
 
-  public handleResize = (): void => {
+  public readonly handleResize = (): void => {
     const { clientWidth, clientHeight } = this.#appElement;
     this.#renderResolutionController.size.width = clientWidth;
     this.#renderResolutionController.size.height = clientHeight;
     this.#renderResolutionController.applyTo(this.#renderer, this.#camera);
+  };
+
+  public readonly restartCurrentLevel = (): void => {
+    this.#currentLevel?.reset();
   };
 
   public readonly switchLevel = async ({
@@ -121,6 +125,9 @@ export class Application {
       physicsWorld: this.#physicsWorld,
       onReachedGoal: () => {
         this.#gameState.currentScene = "level-complete";
+      },
+      onPlayerDie: () => {
+        this.#gameState.currentScene = "game-over";
       },
     });
 

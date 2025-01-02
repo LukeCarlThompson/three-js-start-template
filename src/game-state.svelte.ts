@@ -1,5 +1,5 @@
 export type GameLevelName = "tutorial" | "level-01" | "level-02";
-export type GameSceneName = "game" | "level-select" | "loading" | "title" | "level-complete";
+export type GameSceneName = "game" | "level-select" | "loading" | "title" | "level-complete" | "game-over";
 export type GameLevelEntry = { name: GameLevelName; unlocked: boolean; completed: boolean; bestTime?: number };
 export type GameState = {
   renderQuality: number;

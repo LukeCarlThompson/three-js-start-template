@@ -38,6 +38,13 @@ const startApp = async (): Promise<void> => {
     onTitleScreenClicked: () => {
       gameState.currentScene = "level-select";
     },
+    onChooseLevelClicked: () => {
+      gameState.currentScene = "level-select";
+    },
+    onTryAgainClicked: () => {
+      application.restartCurrentLevel();
+      gameState.currentScene = "game";
+    },
   });
 
   gameState.loadingPercent = 3;

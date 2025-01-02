@@ -6,6 +6,8 @@ export type CreateSvelteAppProps = {
   onStartLevelClicked?: () => void;
   onLevelCompleteClicked?: () => void;
   onTitleScreenClicked?: () => void;
+  onChooseLevelClicked?: () => void;
+  onTryAgainClicked?: () => void;
 };
 
 export const createSvelteApp = ({
@@ -13,6 +15,8 @@ export const createSvelteApp = ({
   onLevelCompleteClicked,
   onStartLevelClicked,
   onTitleScreenClicked,
+  onChooseLevelClicked,
+  onTryAgainClicked,
 }: CreateSvelteAppProps): void => {
   mount(SvelteApp, {
     target: parentElement,
@@ -20,6 +24,8 @@ export const createSvelteApp = ({
       onStartLevelClicked,
       onLevelCompleteClicked,
       onTitleScreenClicked,
+      onChooseLevelClicked,
+      onTryAgainClicked,
     },
   });
 };
