@@ -61,7 +61,7 @@ export class Enemy extends Group {
   public readonly hitLeft = (): RayColliderHit | null => {
     const hitLeft = this.#physicsWorld.castRay(
       this.#rayLeft,
-      0.6,
+      0.45,
       false,
       undefined,
       undefined,
@@ -77,7 +77,7 @@ export class Enemy extends Group {
   public readonly hitRight = (): RayColliderHit | null => {
     const hitRight = this.#physicsWorld.castRay(
       this.#rayRight,
-      0.6,
+      0.45,
       false,
       undefined,
       undefined,
