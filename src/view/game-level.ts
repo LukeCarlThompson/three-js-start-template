@@ -27,6 +27,7 @@ export type GameLevelProps = {
   physicsWorld: World;
   physicsEventQueue: EventQueue;
   onReachedGoal: () => void;
+  onPlayerDie: () => void;
 };
 
 export class GameLevel extends Scene {
@@ -46,9 +47,11 @@ export class GameLevel extends Scene {
     renderDistance: number;
   };
   #terrainColliders: Collider[] = [];
+  #dangerSensors: Collider[] = [];
   #goalSensor?: Collider = undefined;
   #spotLight?: SpotLight | PointLight;
   #onReachedGoal: () => void;
+  #onPlayerDie: () => void;
 
   public constructor({
     environmentModel,
@@ -57,6 +60,7 @@ export class GameLevel extends Scene {
     physicsWorld,
     physicsEventQueue,
     onReachedGoal,
+    onPlayerDie,
   }: GameLevelProps) {
     super();
     const cameraFollowDistance = 80;
@@ -68,6 +72,7 @@ export class GameLevel extends Scene {
 
     this.#player = player;
     this.#onReachedGoal = onReachedGoal;
+    this.#onPlayerDie = onPlayerDie;
 
     this.#physicsWorld = physicsWorld;
     this.#eventQueue = physicsEventQueue;
@@ -109,7 +114,7 @@ export class GameLevel extends Scene {
         environmentMaterial = child.material as Material;
         objectsToAddToBatchedMesh.push(child);
 
-        // Create sensor
+        // Create sensor for goal
         if (child.name.includes("goal_sensor")) {
           const bufferGeometry = BufferGeometryUtils.mergeVertices(child.geometry as BufferGeometry);
           bufferGeometry.scale(child.scale.x, child.scale.y, child.scale.z);
@@ -120,6 +125,21 @@ export class GameLevel extends Scene {
           colliderDesc.rotation = child.quaternion;
           colliderDesc.setSensor(true).setActiveEvents(ActiveEvents.COLLISION_EVENTS);
           this.#goalSensor = physicsWorld.createCollider(colliderDesc);
+
+          return;
+        }
+
+        // Create sensor for danger
+        if (child.name.includes("danger")) {
+          const bufferGeometry = BufferGeometryUtils.mergeVertices(child.geometry as BufferGeometry);
+          bufferGeometry.scale(child.scale.x, child.scale.y, child.scale.z);
+          const vertices = bufferGeometry.attributes.position.array as Float32Array;
+          const indices = bufferGeometry.index?.array as Uint32Array;
+          const colliderDesc = ColliderDesc.trimesh(vertices, indices);
+          colliderDesc.translation = child.position;
+          colliderDesc.rotation = child.quaternion;
+          colliderDesc.setSensor(true).setActiveEvents(ActiveEvents.COLLISION_EVENTS);
+          this.#dangerSensors.push(physicsWorld.createCollider(colliderDesc));
 
           return;
         }
@@ -213,6 +233,9 @@ export class GameLevel extends Scene {
     this.#terrainColliders.forEach((collider) => {
       this.#physicsWorld.removeCollider(collider, true);
     });
+    this.#dangerSensors.forEach((collider) => {
+      this.#physicsWorld.removeCollider(collider, true);
+    });
   };
 
   public update = (delta: number): void => {
@@ -249,9 +272,19 @@ export class GameLevel extends Scene {
 
     this.#eventQueue.drainCollisionEvents((handle1, handle2, started) => {
       const goal = this.#goalSensor?.handle === handle1 || this.#goalSensor?.handle === handle2;
+      const dangerSensor: boolean =
+        this.#dangerSensors.filter((sensor) => {
+          return sensor.handle === handle1 || sensor.handle === handle2;
+        }).length > 0;
 
       if (started && goal) {
         this.#onReachedGoal();
+      }
+
+      if (started && dangerSensor) {
+        // TODO: Stop player movement
+        // TODO: Death animation
+        this.#onPlayerDie();
       }
     });
 
