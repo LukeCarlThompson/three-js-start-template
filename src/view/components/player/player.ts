@@ -38,10 +38,16 @@ export class Player extends Group {
     boostRemaining: number;
     direction: "left" | "right";
     isBoosting: boolean;
+    hitLeft: boolean;
+    hitRight: boolean;
+    hitDown: boolean;
   } = {
     boostRemaining: 10000,
     direction: "right",
     isBoosting: false,
+    hitLeft: false,
+    hitRight: false,
+    hitDown: false,
   };
 
   public constructor({ physicsWorld, model }: PlayerProps) {
@@ -84,11 +90,7 @@ export class Player extends Group {
   }
 
   public readonly jump = (): void => {
-    const hitLeft = this.hitLeft();
-
-    const hitRight = this.hitRight();
-
-    const hitDown = this.hitDown();
+    const { hitLeft, hitRight, hitDown } = this.#state;
 
     const horizontalForce = hitDown
       ? 0
@@ -98,13 +100,17 @@ export class Player extends Group {
       ? this.#config.wallJumpHorizontalForce
       : 0;
 
-    const verticalForce = hitRight || hitLeft ? this.#config.wallJumpForce : this.#config.jumpForce;
+    const wallJump = !hitDown && (hitRight || hitLeft);
+    const verticalForce = hitDown ? this.#config.jumpForce : wallJump ? this.#config.wallJumpForce : 0;
 
     this.rigidBody.applyImpulse({ x: horizontalForce, y: verticalForce, z: 0 }, true);
   };
 
   public readonly boost = (delta: number): void => {
     if (this.#state.boostRemaining === 0) return;
+    const { hitLeft, hitRight, hitDown } = this.#state;
+    if (hitDown || hitLeft || hitRight) return;
+
     this.impulse.y += this.#config.boostForce;
     this.#state.boostRemaining = Math.max(this.#state.boostRemaining - this.#config.boostUsageRate * delta, 0);
     this.#state.isBoosting = true;
@@ -170,6 +176,7 @@ export class Player extends Group {
 
   public readonly update = (delta: number): void => {
     this.#syncWithPhysics();
+    this.#updateHitState();
 
     if (this.impulse.x || this.impulse.y) {
       this.impulse.multiplyScalar(delta);
@@ -183,12 +190,12 @@ export class Player extends Group {
       this.rigidBody.setLinvel(velocity, true);
     }
 
-    if (this.hitDown()) {
+    if (this.#state.hitDown) {
       this.#state.boostRemaining = Math.min(
         this.#state.boostRemaining + this.#config.boostRegenerationRate * delta,
         this.#config.boostMax
       );
-    } else if (this.hitLeft() || this.hitRight()) {
+    } else if (this.#state.hitLeft || this.#state.hitRight) {
       this.rigidBody.setGravityScale(0.1, true);
     } else {
       this.rigidBody.setGravityScale(1, true);
@@ -211,6 +218,12 @@ export class Player extends Group {
 
     this.#resetImpulse();
     this.#state.isBoosting = false;
+  };
+
+  #updateHitState = (): void => {
+    this.#state.hitDown = this.hitDown() !== null;
+    this.#state.hitLeft = this.hitLeft() !== null;
+    this.#state.hitRight = this.hitRight() !== null;
   };
 
   #resetImpulse = (): void => {
