@@ -218,7 +218,9 @@ export class GameLevel extends Scene {
   };
 
   public readonly reset = (): void => {
-    this.#player.rigidBody.setTranslation({ x: 0, y: 0, z: 0 }, true);
+    const vector3 = { x: 0, y: 0, z: 0 };
+    this.#player.rigidBody.setTranslation(vector3, true);
+    this.#player.rigidBody.setLinvel(vector3, true);
   };
 
   /**
