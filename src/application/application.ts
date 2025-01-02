@@ -99,7 +99,7 @@ export class Application {
     this.#renderResolutionController.applyTo(this.#renderer, this.#camera);
   };
 
-  public switchLevel = async ({
+  public readonly switchLevel = async ({
     levelName,
     onLoadingProgressChanged,
   }: {
