@@ -152,7 +152,7 @@ export class Application {
   };
 
   #update = (delta: number): void => {
-    if (!this.#currentLevel) return;
+    if (!this.#currentLevel || this.#gameState.currentScene !== "game") return;
 
     this.#currentLevel.playerMovement.left = this.#userInput.state.left;
     this.#currentLevel.playerMovement.right = this.#userInput.state.right;
