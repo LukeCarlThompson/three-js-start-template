@@ -14,8 +14,8 @@ import {
 } from "three";
 import type { BufferGeometry, Material, Object3D, PerspectiveCamera } from "three";
 import type { Collider, EventQueue, World } from "@dimforge/rapier3d-compat";
+import { Enemy, MoveableBlock } from "./components";
 
-import { Enemy } from "./components";
 import type { Player } from "./components";
 import { createCustomFog } from "./custom-fog";
 import { damp } from "three/src/math/MathUtils.js";
@@ -50,6 +50,7 @@ export class GameLevel extends Scene {
   #terrainColliders: Collider[] = [];
   #dangerSensors: Collider[] = [];
   #enemies: Enemy[] = [];
+  #moveableBlocks: MoveableBlock[] = [];
   #goalSensor?: Collider = undefined;
   #spotLight?: SpotLight | PointLight;
   #onReachedGoal: () => void;
@@ -90,6 +91,7 @@ export class GameLevel extends Scene {
     const objectsToAddToBatchedMesh: Mesh<any, any, any>[] = [];
     const objectsToAddToToScene: Object3D[] = [];
     const meshesToMakeEnemies: Object3D[] = [];
+    const meshesToMakeMoveableBlocks: Mesh[] = [];
     let environmentMaterial: Material = new MeshLambertMaterial({
       forceSinglePass: true,
     });
@@ -120,6 +122,11 @@ export class GameLevel extends Scene {
         // Create enemy
         if (child.name.includes("enemy")) {
           meshesToMakeEnemies.push(child);
+          return;
+        }
+
+        if (child.name.includes("moveable-block")) {
+          meshesToMakeMoveableBlocks.push(child as Mesh);
           return;
         }
 
@@ -190,11 +197,15 @@ export class GameLevel extends Scene {
     });
 
     meshesToMakeEnemies.forEach((mesh) => {
-      const { x, y, z } = mesh.position;
       const enemy = new Enemy({ physicsWorld: this.#physicsWorld, model: mesh });
-      enemy.rigidBody.setTranslation({ x, y, z }, true);
       this.#enemies.push(enemy);
       this.add(enemy);
+    });
+
+    meshesToMakeMoveableBlocks.forEach((mesh) => {
+      const moveableBlock = new MoveableBlock({ physicsWorld: this.#physicsWorld, model: mesh });
+      this.#moveableBlocks.push(moveableBlock);
+      this.add(moveableBlock);
     });
 
     const batchedMesh = new BatchedMesh(
@@ -227,24 +238,19 @@ export class GameLevel extends Scene {
   };
 
   public readonly jumpPressed = (): void => {
-    let canJump = false;
-
-    this.#terrainColliders.forEach((terrainCollider) => {
-      this.#physicsWorld.contactPair(this.#player.collider, terrainCollider, () => {
-        canJump = true;
-      });
-    });
-
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (canJump) {
-      this.#player.jump();
-    }
+    this.#player.jump();
   };
 
   public readonly reset = (): void => {
     const vector3 = { x: 0, y: 0, z: 0 };
     this.#player.rigidBody.setTranslation(vector3, true);
     this.#player.rigidBody.setLinvel(vector3, true);
+    this.#enemies.forEach((enemy) => {
+      enemy.reset();
+    });
+    this.#moveableBlocks.forEach((block) => {
+      block.reset();
+    });
   };
 
   /**
@@ -263,8 +269,10 @@ export class GameLevel extends Scene {
       this.#physicsWorld.removeCollider(collider, true);
     });
     this.#enemies.forEach((enemy) => {
-      this.#physicsWorld.removeCollider(enemy.collider, true);
-      this.#physicsWorld.removeRigidBody(enemy.rigidBody);
+      enemy.destroy();
+    });
+    this.#moveableBlocks.forEach((block) => {
+      block.destroy();
     });
   };
 
@@ -327,6 +335,9 @@ export class GameLevel extends Scene {
     this.#player.update(delta);
     this.#enemies.forEach((enemy) => {
       enemy.update(delta);
+    });
+    this.#moveableBlocks.forEach((block) => {
+      block.update(delta);
     });
   };
 
