@@ -111,9 +111,7 @@ export class Application {
       onProgress: onLoadingProgressChanged,
     });
 
-    const previousLevel = this.#currentLevel;
-    void previousLevel;
-    // TODO: dispose of the previous level and assets
+    this.#currentLevel?.destroy();
 
     this.#currentLevel = new GameLevel({
       environmentModel: assetCache.gltf[levelName].scene,

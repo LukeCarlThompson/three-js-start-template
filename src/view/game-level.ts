@@ -201,6 +201,20 @@ export class GameLevel extends Scene {
     this.#player.rigidBody.setTranslation({ x: 0, y: 0, z: 0 }, true);
   };
 
+  /**
+   * Removes any assets unique to this scene from memory.
+   * Removes any physics objects unique to this scene.
+   */
+  public readonly destroy = (): void => {
+    // TODO: Remove all meshes
+    // Remove all textures
+    // Remove all sounds
+    // Remove all colliders and rigid bodies
+    this.#terrainColliders.forEach((collider) => {
+      this.#physicsWorld.removeCollider(collider, true);
+    });
+  };
+
   public update = (delta: number): void => {
     if (this.playerMovement.right) {
       this.#player.moveRight();
