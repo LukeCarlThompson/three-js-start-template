@@ -17,6 +17,7 @@ import type { Collider, EventQueue, World } from "@dimforge/rapier3d-compat";
 
 import { ExampleComponent } from "./components";
 import type { Player } from "./components";
+import { createCustomFog } from "./custom-fog";
 import { damp } from "three/src/math/MathUtils.js";
 
 export type GameLevelProps = {
@@ -65,6 +66,7 @@ export class GameLevel extends Scene {
       renderDistance: cameraFollowDistance + 50,
     };
 
+    this.#player = player;
     this.#onReachedGoal = onReachedGoal;
 
     this.#physicsWorld = physicsWorld;
@@ -78,8 +80,6 @@ export class GameLevel extends Scene {
     this.#camera.position.set(0, 3, this.#config.cameraFollowDistance);
     this.#exampleComponent = new ExampleComponent({ dimensions: { x: 1, y: 1, z: 1 } });
     this.#exampleComponent.position.y = 8;
-
-    this.#player = player;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const objectsToAddToBatchedMesh: Mesh<any, any, any>[] = [];
@@ -95,6 +95,10 @@ export class GameLevel extends Scene {
           const colour = new Color(backgroundColour);
           this.fog?.color.set(colour);
           this.background = colour;
+
+          const fogNode = createCustomFog(backgroundColour);
+
+          this.fogNode = fogNode;
         }
         return;
       }
