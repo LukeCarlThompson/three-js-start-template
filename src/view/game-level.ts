@@ -89,6 +89,7 @@ export class GameLevel extends Scene {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const objectsToAddToBatchedMesh: Mesh<any, any, any>[] = [];
     const objectsToAddToToScene: Object3D[] = [];
+    const meshesToMakeEnemies: Object3D[] = [];
     let environmentMaterial: Material = new MeshLambertMaterial({
       forceSinglePass: true,
     });
@@ -118,17 +119,13 @@ export class GameLevel extends Scene {
 
         // Create enemy
         if (child.name.includes("enemy")) {
-          const { x, y, z } = child.position;
-          const enemy = new Enemy({ physicsWorld: this.#physicsWorld, model: child });
-          enemy.rigidBody.setTranslation({ x, y, z }, true);
-          this.#enemies.push(enemy);
-          this.add(enemy);
-
+          meshesToMakeEnemies.push(child);
           return;
         }
 
         objectsToAddToBatchedMesh.push(child);
 
+        // Count vertices and indexes for batched mesh
         if ("position" in (child.geometry as BufferGeometry).attributes) {
           verticesCount += (child.geometry as BufferGeometry).attributes.position.count;
           indexCount += (child.geometry as BufferGeometry).index?.count || 0;
@@ -190,6 +187,14 @@ export class GameLevel extends Scene {
         this.#spotLight = child;
         objectsToAddToToScene.push(this.#spotLight);
       }
+    });
+
+    meshesToMakeEnemies.forEach((mesh) => {
+      const { x, y, z } = mesh.position;
+      const enemy = new Enemy({ physicsWorld: this.#physicsWorld, model: mesh });
+      enemy.rigidBody.setTranslation({ x, y, z }, true);
+      this.#enemies.push(enemy);
+      this.add(enemy);
     });
 
     const batchedMesh = new BatchedMesh(
