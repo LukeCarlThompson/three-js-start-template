@@ -191,11 +191,7 @@ export class Player extends Group {
     } else if (this.hitLeft() || this.hitRight()) {
       this.rigidBody.setGravityScale(0.1, true);
     } else {
-      if (velocity.y >= 0) {
-        this.rigidBody.setGravityScale(1, true);
-      } else {
-        this.rigidBody.setGravityScale(0.5, true);
-      }
+      this.rigidBody.setGravityScale(1, true);
     }
 
     const rotation = this.#state.direction === "left" ? -90 : 90;
