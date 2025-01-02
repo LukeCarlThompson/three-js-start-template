@@ -8,11 +8,11 @@ export const createCustomFog = (colour: string): ShaderNodeObject<FogNode> => {
 
   const lowFrequencyNoise = triNoise3D(positionWorld.mul(multiplier).mul(0.008), 0.2, time);
   const highFrequencyNoise = triNoise3D(positionWorld.mul(multiplier).mul(0.01), 0.3, time);
-  const combinedNoise = lowFrequencyNoise.add(highFrequencyNoise.mul(0.2)).mul(0.7);
+  const combinedNoise = lowFrequencyNoise.add(highFrequencyNoise.mul(0.5)).mul(0.7);
 
   const fogColour = color(colour);
 
-  const fogResult = fog(fogColour, positionWorld.z.sub(4).mul(-0.003).div(combinedNoise).saturate());
+  const fogResult = fog(fogColour, positionWorld.z.sub(4).mul(-0.004).div(combinedNoise).saturate());
 
   return fogResult;
 };
