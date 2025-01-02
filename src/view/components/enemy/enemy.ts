@@ -20,9 +20,9 @@ export class Enemy extends Group {
   readonly #physicsWorld: World;
   readonly #startPositon: Vector3;
   readonly #config = {
-    mass: 5,
-    friction: 1,
-    horizontalMovementForce: 1.5,
+    mass: 1,
+    friction: 0.1,
+    horizontalMovementForce: 10,
   };
   readonly #state: {
     direction: "left" | "right";
@@ -112,12 +112,14 @@ export class Enemy extends Group {
         ? this.#config.horizontalMovementForce
         : this.#config.horizontalMovementForce * -1;
 
+    this.impulse.multiplyScalar(delta);
+
     this.rigidBody.applyImpulse(this.impulse, true);
 
     const rotation = velocity.x > 0 ? 70 : -70;
     this.#model.rotation.y = damp(this.#model.rotation.y, degToRad(rotation), 10, delta);
 
-    const tilt = velocity.x > 0 ? 0.1 : -0.1;
+    const tilt = velocity.x > 0 ? 0.2 : -0.2;
     this.rotation.z = damp(this.rotation.z, tilt + velocity.x * -0.03, 10, delta);
   };
 
@@ -133,7 +135,7 @@ export class Enemy extends Group {
    * Sets the object back to it's starting state
    */
   public readonly reset = (): void => {
-    this.rigidBody.setTranslation(this.#startPositon, true);
+    this.rigidBody.setTranslation(this.#startPositon, false);
   };
 
   #createPhysicsBody(physicsWorld: World) {
@@ -141,15 +143,14 @@ export class Enemy extends Group {
       .setTranslation(this.position.x, this.position.y, this.position.z)
       .enabledTranslations(true, true, false)
       .enabledRotations(false, false, false)
-      .setCcdEnabled(true)
-      .setLinearDamping(1)
+      .setLinearDamping(0.2)
       .setAngularDamping(0)
       .setUserData({
         name: "Enemy",
       });
     const rigidBody = physicsWorld.createRigidBody(rigidBodyDesc);
     const colliderDesc = ColliderDesc.ball(0.4)
-      .setRestitution(0)
+      .setRestitution(0.5)
       .setDensity(0)
       .setFriction(this.#config.friction)
       .setMass(this.#config.mass)
