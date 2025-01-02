@@ -15,6 +15,7 @@ import {
 import type { BufferGeometry, Material, Object3D, PerspectiveCamera } from "three";
 import type { Collider, EventQueue, World } from "@dimforge/rapier3d-compat";
 
+import { Enemy } from "./components";
 import type { Player } from "./components";
 import { createCustomFog } from "./custom-fog";
 import { damp } from "three/src/math/MathUtils.js";
@@ -28,6 +29,8 @@ export type GameLevelProps = {
   onReachedGoal: () => void;
   onPlayerDie: () => void;
 };
+
+type CollisionEvent = "player-hit-enemy" | "player-hit-goal" | "player-hit-danger";
 
 export class GameLevel extends Scene {
   public readonly playerMovement = {
@@ -46,6 +49,7 @@ export class GameLevel extends Scene {
   };
   #terrainColliders: Collider[] = [];
   #dangerSensors: Collider[] = [];
+  #enemies: Enemy[] = [];
   #goalSensor?: Collider = undefined;
   #spotLight?: SpotLight | PointLight;
   #onReachedGoal: () => void;
@@ -111,6 +115,18 @@ export class GameLevel extends Scene {
         child.castShadow = true;
         child.receiveShadow = true;
         environmentMaterial = child.material as Material;
+
+        // Create enemy
+        if (child.name.includes("enemy")) {
+          const { x, y, z } = child.position;
+          const enemy = new Enemy({ physicsWorld: this.#physicsWorld, model: child });
+          enemy.rigidBody.setTranslation({ x, y, z }, true);
+          this.#enemies.push(enemy);
+          this.add(enemy);
+
+          return;
+        }
+
         objectsToAddToBatchedMesh.push(child);
 
         if ("position" in (child.geometry as BufferGeometry).attributes) {
@@ -276,20 +292,18 @@ export class GameLevel extends Scene {
     );
 
     this.#eventQueue.drainCollisionEvents((handle1, handle2, started) => {
-      const goal = this.#goalSensor?.handle === handle1 || this.#goalSensor?.handle === handle2;
-      const dangerSensor: boolean =
-        this.#dangerSensors.filter((sensor) => {
-          return sensor.handle === handle1 || sensor.handle === handle2;
-        }).length > 0;
+      const eventName = this.#processCollisionEvent(started, handle1, handle2);
 
-      if (started && goal) {
-        this.#onReachedGoal();
-      }
-
-      if (started && dangerSensor) {
-        // TODO: Stop player movement
-        // TODO: Death animation
-        this.#onPlayerDie();
+      switch (eventName) {
+        case "player-hit-danger":
+          this.#onPlayerDie();
+          break;
+        case "player-hit-enemy":
+          this.#onPlayerDie();
+          break;
+        case "player-hit-goal":
+          this.#onReachedGoal();
+          break;
       }
     });
 
@@ -302,5 +316,38 @@ export class GameLevel extends Scene {
     this.#physicsWorld.step(this.#eventQueue);
 
     this.#player.update(delta);
+    this.#enemies.forEach((enemy) => {
+      enemy.update(delta);
+    });
+  };
+
+  #processCollisionEvent = (started: boolean, handle1: number, handle2: number): CollisionEvent | undefined => {
+    const goal = this.#goalSensor?.handle === handle1 || this.#goalSensor?.handle === handle2;
+
+    const danger: boolean =
+      this.#dangerSensors.filter((sensor) => {
+        return sensor.handle === handle1 || sensor.handle === handle2;
+      }).length > 0;
+
+    const player = handle1 === this.#player.rigidBody.handle || handle2 === this.#player.rigidBody.handle;
+
+    const enemy =
+      this.#enemies.filter((enemy) => {
+        return enemy.collider.handle === handle1 || enemy.collider.handle === handle2;
+      }).length > 0;
+
+    const playerHitGoal = started && goal && player;
+    const playerHitEnemy = started && player && enemy;
+    const playerHitDanger = started && player && danger;
+
+    if (playerHitGoal) {
+      return "player-hit-goal";
+    }
+    if (playerHitEnemy) {
+      return "player-hit-enemy";
+    }
+    if (playerHitDanger) {
+      return "player-hit-danger";
+    }
   };
 }
