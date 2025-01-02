@@ -262,6 +262,10 @@ export class GameLevel extends Scene {
     this.#dangerSensors.forEach((collider) => {
       this.#physicsWorld.removeCollider(collider, true);
     });
+    this.#enemies.forEach((enemy) => {
+      this.#physicsWorld.removeCollider(enemy.collider, true);
+      this.#physicsWorld.removeRigidBody(enemy.rigidBody);
+    });
   };
 
   public update = (delta: number): void => {
