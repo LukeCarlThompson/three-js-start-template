@@ -15,7 +15,6 @@ import {
 import type { BufferGeometry, Material, Object3D, PerspectiveCamera } from "three";
 import type { Collider, EventQueue, World } from "@dimforge/rapier3d-compat";
 
-import { ExampleComponent } from "./components";
 import type { Player } from "./components";
 import { createCustomFog } from "./custom-fog";
 import { damp } from "three/src/math/MathUtils.js";
@@ -37,7 +36,6 @@ export class GameLevel extends Scene {
     left: false,
   };
   #camera: PerspectiveCamera;
-  #exampleComponent: ExampleComponent;
   #player: Player;
   #physicsWorld: World;
   #eventQueue: EventQueue;
@@ -83,8 +81,6 @@ export class GameLevel extends Scene {
     this.#camera.far = this.#config.renderDistance;
     this.#camera.fov = 10;
     this.#camera.position.set(0, 3, this.#config.cameraFollowDistance);
-    this.#exampleComponent = new ExampleComponent({ dimensions: { x: 1, y: 1, z: 1 } });
-    this.#exampleComponent.position.y = 8;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const objectsToAddToBatchedMesh: Mesh<any, any, any>[] = [];
@@ -185,13 +181,7 @@ export class GameLevel extends Scene {
       batchedMesh.setMatrixAt(instancedId, object.matrix);
     });
 
-    this.add(
-      this.#exampleComponent,
-      batchedMesh,
-      ...objectsToAddToToScene,
-      this.#player,
-      new HemisphereLight(0xffffff, 0x080820, 0.1)
-    );
+    this.add(batchedMesh, ...objectsToAddToToScene, this.#player, new HemisphereLight(0xffffff, 0x080820, 0.1));
   }
 
   public readonly setShadowMapQuality = (quality: number): void => {
