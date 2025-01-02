@@ -194,7 +194,7 @@ export class Player extends Group {
       this.rigidBody.setGravityScale(1, true);
     }
 
-    const rotation = this.#state.direction === "left" ? -90 : 90;
+    const rotation = this.#state.direction === "left" ? -70 : 70;
     this.#model.rotation.y = damp(this.#model.rotation.y, degToRad(rotation), 10, delta);
 
     const tilt = this.#state.direction === "left" ? 0.1 : -0.1;
