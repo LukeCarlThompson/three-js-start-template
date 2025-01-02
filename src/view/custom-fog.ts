@@ -14,7 +14,7 @@ export const createCustomFog = (colour: string): ShaderNodeObject<FogNode> => {
 
   const fogColour = color(colour);
 
-  const fogResult = fog(fogColour, positionWorld.z.sub(5).mul(-0.002).div(combinedNoise).saturate());
+  const fogResult = fog(fogColour, positionWorld.z.sub(4).mul(-0.003).div(combinedNoise).saturate());
 
   return fogResult;
 };
