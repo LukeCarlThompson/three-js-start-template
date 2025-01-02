@@ -129,7 +129,7 @@ export class Player extends Group {
   public readonly hitLeft = (): RayColliderHit | null => {
     const hitLeft = this.#physicsWorld.castRay(
       this.#rayLeft,
-      0.6,
+      0.5,
       false,
       undefined,
       undefined,
@@ -145,7 +145,7 @@ export class Player extends Group {
   public readonly hitRight = (): RayColliderHit | null => {
     const hitRight = this.#physicsWorld.castRay(
       this.#rayRight,
-      0.6,
+      0.5,
       false,
       undefined,
       undefined,
@@ -184,6 +184,7 @@ export class Player extends Group {
     }
 
     const velocity = this.rigidBody.linvel();
+    const hasHorizontalImpulse = Math.abs(this.impulse.x);
 
     if (Math.abs(velocity.x) > this.#config.playerVelocityLimit) {
       velocity.x = velocity.x * 0.9;
@@ -195,10 +196,12 @@ export class Player extends Group {
         this.#state.boostRemaining + this.#config.boostRegenerationRate * delta,
         this.#config.boostMax
       );
-    } else if (this.#state.hitLeft || this.#state.hitRight) {
+    } else if (hasHorizontalImpulse && (this.#state.hitLeft || this.#state.hitRight)) {
       this.rigidBody.setGravityScale(0.1, true);
+      this.collider.setFrictionCombineRule(CoefficientCombineRule.Max);
     } else {
       this.rigidBody.setGravityScale(1, true);
+      this.collider.setFrictionCombineRule(CoefficientCombineRule.Min);
     }
 
     const rotation = this.#state.direction === "left" ? -70 : 70;
@@ -211,10 +214,6 @@ export class Player extends Group {
     const boostIndicatorScale = this.#state.isBoosting ? boostPercentRemaining : 0;
     this.#boostIndicator.scale.x = damp(this.#boostIndicator.scale.x, boostIndicatorScale, 10, delta);
     this.#boostIndicator.scale.z = damp(this.#boostIndicator.scale.z, boostIndicatorScale, 10, delta);
-
-    const frictionCombineRule =
-      !this.hitDown() && (this.hitLeft() || this.hitRight()) ? CoefficientCombineRule.Max : CoefficientCombineRule.Min;
-    this.collider.setFrictionCombineRule(frictionCombineRule);
 
     this.#resetImpulse();
     this.#state.isBoosting = false;
