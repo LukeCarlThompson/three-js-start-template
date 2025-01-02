@@ -89,6 +89,9 @@ export class GameLevel extends Scene {
       forceSinglePass: true,
     });
 
+    let verticesCount = 0;
+    let indexCount = 0;
+
     environmentModel.traverse((child) => {
       if (child.name.includes("user-data")) {
         if ("backgroundColour" in child.userData && typeof child.userData.backgroundColour === "string") {
@@ -109,6 +112,11 @@ export class GameLevel extends Scene {
         child.receiveShadow = true;
         environmentMaterial = child.material as Material;
         objectsToAddToBatchedMesh.push(child);
+
+        if ("position" in (child.geometry as BufferGeometry).attributes) {
+          verticesCount += (child.geometry as BufferGeometry).attributes.position.count;
+          indexCount += (child.geometry as BufferGeometry).index?.count || 0;
+        }
 
         // Create sensor for goal
         if (child.name.includes("goal_sensor")) {
@@ -168,7 +176,12 @@ export class GameLevel extends Scene {
       }
     });
 
-    const batchedMesh = new BatchedMesh(environmentModel.children.length, 5000, 10000, environmentMaterial);
+    const batchedMesh = new BatchedMesh(
+      environmentModel.children.length,
+      verticesCount,
+      indexCount,
+      environmentMaterial
+    );
 
     batchedMesh.castShadow = true;
     batchedMesh.receiveShadow = true;
