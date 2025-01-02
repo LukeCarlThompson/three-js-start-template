@@ -10,8 +10,8 @@ export const getConfig = (): Config => {
     return {
       stats: true,
       debugControls: true,
-      physicsDebugRender: true,
-      webGPUEnabled: false,
+      physicsDebugRender: false,
+      webGPUEnabled: true,
     };
   }
 
