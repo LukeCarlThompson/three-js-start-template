@@ -18,6 +18,7 @@ export class Enemy extends Group {
   readonly #rayRight: Ray;
   readonly #rayLeft: Ray;
   readonly #physicsWorld: World;
+  readonly #startPositon: Vector3;
   readonly #config = {
     mass: 5,
     friction: 1,
@@ -33,6 +34,10 @@ export class Enemy extends Group {
     super();
 
     this.#physicsWorld = physicsWorld;
+    const { x, y, z } = model.position;
+    this.#startPositon = new Vector3(x, y, z);
+    this.position.set(x, y, z);
+    model.position.set(0, 0, 0);
 
     this.#rayRight = new Ray(this.position, { x: 1, y: 0, z: 0 });
     this.#rayLeft = new Ray(this.position, { x: -1, y: 0, z: 0 });
@@ -114,6 +119,21 @@ export class Enemy extends Group {
 
     const tilt = velocity.x > 0 ? 0.1 : -0.1;
     this.rotation.z = damp(this.rotation.z, tilt + velocity.x * -0.03, 10, delta);
+  };
+
+  /**
+   * Removes the collider and rigid body from the physics world
+   */
+  public readonly destroy = (): void => {
+    this.#physicsWorld.removeCollider(this.collider, false);
+    this.#physicsWorld.removeRigidBody(this.rigidBody);
+  };
+
+  /**
+   * Sets the object back to it's starting state
+   */
+  public readonly reset = (): void => {
+    this.rigidBody.setTranslation(this.#startPositon, true);
   };
 
   #createPhysicsBody(physicsWorld: World) {
