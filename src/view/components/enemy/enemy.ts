@@ -22,7 +22,7 @@ export class Enemy extends Group {
   readonly #config = {
     mass: 1,
     friction: 0.1,
-    horizontalMovementForce: 10,
+    horizontalMovementForce: 5,
   };
   readonly #state: {
     direction: "left" | "right";
@@ -119,8 +119,8 @@ export class Enemy extends Group {
     const rotation = velocity.x > 0 ? 70 : -70;
     this.#model.rotation.y = damp(this.#model.rotation.y, degToRad(rotation), 10, delta);
 
-    const tilt = velocity.x > 0 ? 0.2 : -0.2;
-    this.rotation.z = damp(this.rotation.z, tilt + velocity.x * -0.03, 10, delta);
+    const tilt = velocity.x > 0 ? -0.2 : 0.2;
+    this.rotation.z = damp(this.rotation.z, tilt + velocity.x * 0.05, 10, delta);
   };
 
   /**
