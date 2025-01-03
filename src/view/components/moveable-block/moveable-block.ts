@@ -15,10 +15,10 @@ export class MoveableBlock extends Group {
   readonly #model: Mesh;
   readonly #physicsWorld: World;
   readonly #config = {
-    mass: 1,
-    friction: 0.4,
-    restitution: 0.5,
-    linearDamping: 0.1,
+    mass: 4,
+    friction: 0.2,
+    restitution: 0,
+    linearDamping: 0.5,
     angularDamping: 0.1,
   };
   readonly #startPositon: Vector3;
