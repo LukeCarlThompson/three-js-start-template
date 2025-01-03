@@ -108,8 +108,6 @@ export class Player extends Group {
 
   public readonly boost = (delta: number): void => {
     if (this.#state.boostRemaining === 0) return;
-    const { hitLeft, hitRight, hitDown } = this.#state;
-    if (hitDown || hitLeft || hitRight) return;
 
     this.impulse.y += this.#config.boostForce;
     this.#state.boostRemaining = Math.max(this.#state.boostRemaining - this.#config.boostUsageRate * delta, 0);
@@ -197,10 +195,8 @@ export class Player extends Group {
         this.#config.boostMax
       );
     } else if (hasHorizontalImpulse && (this.#state.hitLeft || this.#state.hitRight)) {
-      this.rigidBody.setGravityScale(0.1, true);
       this.collider.setFrictionCombineRule(CoefficientCombineRule.Max);
     } else {
-      this.rigidBody.setGravityScale(1, true);
       this.collider.setFrictionCombineRule(CoefficientCombineRule.Min);
     }
 
