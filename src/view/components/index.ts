@@ -6,3 +6,5 @@ export { MoveableBlock } from "./moveable-block";
 export type { MoveableBlockProps } from "./moveable-block";
 export { Player } from "./player";
 export type { PlayerProps } from "./player";
+export { Spring } from "./spring";
+export type { SpringProps } from "./spring";
