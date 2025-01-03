@@ -46,7 +46,8 @@ export class MoveableBlock extends Group {
 
     model.castShadow = true;
     model.receiveShadow = true;
-    this.scale.set(1.1, 1.1, 1.1);
+    this.scale.set(1.15, 1.15, 1.15);
+
     this.#model = model;
 
     this.add(this.#model);
