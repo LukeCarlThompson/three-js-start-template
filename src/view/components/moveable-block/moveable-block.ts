@@ -1,5 +1,3 @@
-import * as BufferGeometryUtils from "three/addons/utils/BufferGeometryUtils.js";
-
 import { CoefficientCombineRule, ColliderDesc, RigidBodyDesc } from "@dimforge/rapier3d-compat";
 import type { Collider, RigidBody, World } from "@dimforge/rapier3d-compat";
 import { Group, Mesh, Vector3 } from "three";
@@ -15,11 +13,11 @@ export class MoveableBlock extends Group {
   readonly #model: Mesh;
   readonly #physicsWorld: World;
   readonly #config = {
-    mass: 4,
+    mass: 0.1,
     friction: 0.2,
     restitution: 0,
-    linearDamping: 0.5,
-    angularDamping: 0.1,
+    linearDamping: 0.3,
+    angularDamping: 0.3,
   };
   readonly #startPositon: Vector3;
 
@@ -28,7 +26,7 @@ export class MoveableBlock extends Group {
 
     this.#physicsWorld = physicsWorld;
     const { x, y, z } = model.position;
-    this.#startPositon = new Vector3(x, y + 2, z);
+    this.#startPositon = new Vector3(x, y + 1, z);
     model.position.set(0, 0, 0);
 
     const { rigidBody, collider } = this.#createPhysicsBody(physicsWorld, model);
@@ -46,7 +44,6 @@ export class MoveableBlock extends Group {
 
     model.castShadow = true;
     model.receiveShadow = true;
-    this.scale.set(1.15, 1.15, 1.15);
 
     this.#model = model;
 
@@ -77,10 +74,14 @@ export class MoveableBlock extends Group {
   };
 
   #createPhysicsBody(physicsWorld: World, child: Mesh) {
-    const bufferGeometry = BufferGeometryUtils.mergeVertices(child.geometry);
-    bufferGeometry.scale(child.scale.x, child.scale.y, child.scale.z);
-    const vertices = bufferGeometry.attributes.position.array as Float32Array;
-    const indices = bufferGeometry.index?.array as Uint32Array;
+    if (!child.geometry.boundingBox) {
+      throw new Error("Movable block does not have bounding box");
+    }
+
+    const { min, max } = child.geometry.boundingBox;
+    const width = Math.max(0.1, (Math.abs(max.x) + Math.abs(min.x)) * child.scale.x * 0.5 - 0.2);
+
+    console.log(width);
 
     const { x, y, z } = this.#startPositon;
     const rigidBodyDesc = RigidBodyDesc.dynamic()
@@ -95,11 +96,11 @@ export class MoveableBlock extends Group {
         name: "MoveableBlock",
       });
 
-    const colliderDesc = ColliderDesc.trimesh(vertices, indices)
+    const colliderDesc = ColliderDesc.cuboid(width, width, width)
       .setRestitution(this.#config.restitution)
       .setFriction(this.#config.friction)
-      .setMass(this.#config.mass)
-      .setContactSkin(0.1)
+      .setDensity(0.5)
+      .setContactSkin(0.2)
       .setFrictionCombineRule(CoefficientCombineRule.Min)
       .setRestitutionCombineRule(CoefficientCombineRule.Min);
 
