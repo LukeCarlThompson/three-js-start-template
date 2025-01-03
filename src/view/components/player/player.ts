@@ -238,18 +238,19 @@ export class Player extends Group {
       .setTranslation(this.position.x, this.position.y, this.position.z)
       .enabledTranslations(true, true, false)
       .enabledRotations(false, false, false)
-      .setCcdEnabled(true)
+      .setCcdEnabled(false)
       .setLinearDamping(1)
       .setAngularDamping(0)
       .setUserData({
         name: "Player",
       });
     const rigidBody = physicsWorld.createRigidBody(rigidBodyDesc);
-    const colliderDesc = ColliderDesc.ball(0.4)
+    const colliderDesc = ColliderDesc.ball(0.3)
       .setRestitution(0)
       .setDensity(0)
       .setFriction(this.#config.playerFriction)
       .setMass(this.#config.playerMass)
+      .setContactSkin(0.1)
       .setFrictionCombineRule(CoefficientCombineRule.Min)
       .setRestitutionCombineRule(CoefficientCombineRule.Min)
       .setActiveEvents(ActiveEvents.COLLISION_EVENTS);
